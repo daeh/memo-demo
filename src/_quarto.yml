@@ -1,0 +1,31 @@
+project:
+  type: website
+  output-dir: ../docs
+  resources:
+    - "test-codemirror-static-html.html"
+    - "test-codemirror-static-html-translate.html"
+
+website:
+  title: "Memo Demo"
+  # navbar: false  # Disable default navbar to use custom navbar
+
+format:
+  html:
+    theme: cosmo
+    css: assets/styles/styles.css
+    toc: true
+    toc-location: right
+    toc-depth: 3
+    smooth-scroll: true
+    anchor-sections: true
+    code-copy: true
+    code-overflow: wrap
+    highlight-style: github
+    # Include Thebe (thebe-core) CSS and Thebe configuration via external HTML include
+
+execute:
+  # Disable Quarto code execution to allow Thebe to run code interactively in the browser
+  enabled: false
+
+metadata-files:
+  - _metadata.yml

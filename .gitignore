@@ -1,0 +1,48 @@
+# Quarto
+/.quarto/
+/_site/
+/_freeze/
+
+# R
+.Rhistory
+.RData
+.Rproj.user
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+env/
+venv/
+.venv
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Dependencies
+node_modules/
+
+# Output directories (except docs for GitHub Pages)
+_book/
+_output/
+
+# Temporary files
+*.tmp
+*.temp
+.~lock.*
+
+###
+*.local.*
+_references/
+/.quarto/
+_reference

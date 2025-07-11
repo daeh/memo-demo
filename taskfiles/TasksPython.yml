@@ -1,0 +1,515 @@
+version: '3'
+
+vars:
+  ###
+  # this file expects these variables to be passed from the root Taskfile.yml
+  ###
+  # === EXPECTED VARIABLES FROM ROOT TASKFILE === #
+  # SRC_DIR: Source code directory (e.g., 'src') (optional; defaults to {{.SRC_DIR_DEFAULT}})
+  # EXTRAS_DIRS_LIST: Additional directories to lint (optional; if EXTRAS_DIRS_LIST is not defined, lint-extra just skips it)
+  # VENV_DIR: Virtual environment directory name (optional; defaults to {{.VENV_DIR_DEFAULT}})
+  # PYTHON_VERSION: e.g. "3.13"
+  # PRIOR_ENV_LOCKS: Directory for environment snapshots (optional; defaults to {{.PRIOR_ENV_LOCKS_DEFAULT}})
+  # PROJ_PATH: Project root path
+  # DATE_STR: Date string for snapshots (optional; defaults to current date in YYYYMMDD format)
+
+  # === DEFAULT VALUES === #
+  SRC_DIR_DEFAULT: 'src'
+  VENV_DIR_DEFAULT: '.venv'
+  PYTHON_VERSION_DEFAULT: '3.13'
+  PRIOR_ENV_LOCKS_DEFAULT: '_prior_environments'
+  ENTRY_PATH:
+    sh: echo "$(pwd)"
+
+tasks:
+
+  # === ENVIRONMENT MANAGEMENT === #
+
+  install:
+    desc: 'Install Python virtual environment and dependencies (WARNING: overwrites existing env)'
+    aliases: [env-install]
+    deps: [check-installable, check-tools]
+    vars:
+      PYTHON_VERSION_: '{{default .PYTHON_VERSION_DEFAULT .PYTHON_VERSION}}'
+    prompt: Install python virtual env? (this will overwrite any existing env)
+    cmds:
+      - task: scrub
+        silent: true
+      - echo "Creating python environment for v{{.PYTHON_VERSION_}}..."
+      - uv python install "{{.PYTHON_VERSION_}}"
+      - uv python upgrade "{{.PYTHON_VERSION_}}"
+      - uv sync --python "{{.PYTHON_VERSION_}}"
+      - task: exc-postinstall
+      - task: exc-store-env-state
+      # - uvx pre-commit install
+      - echo "✅ Environment installed successfully!"
+      - task: status
+
+  update:
+    desc: 'Update all dependencies to latest compatible versions'
+    aliases: [update-deps, env-update, env-update-deps]
+    deps: [check-install]
+    interactive: false
+    cmds:
+      - echo "Updating dependencies..."
+      - cmd: rm "uv.lock"
+        ignore_error: true
+      - uv sync --upgrade ### shorthand for `uv lock --upgrade && uv sync`
+      - task: exc-store-env-state
+      - cmd: |
+          if [ -f ".pre-commit-config.yaml" ]; then
+            echo "Updating pre-commit hooks..."
+            uvx pre-commit autoupdate
+          fi
+      - echo "✅ Dependencies updated successfully!"
+
+  scrub:
+    desc: 'Remove virtual environment and generated files (DESTRUCTIVE)'
+    aliases: [env-scrub, env-clean, clean]
+    vars:
+      PROJ_PATH_: '{{default .ENTRY_PATH .PROJ_PATH}}'
+      VENV_DIR_: '{{default .VENV_DIR_DEFAULT .VENV_DIR}}'
+      # RM_FILE_LIST:
+      #   sh: find -type f -name '*.DS_Store'
+      RM_STATIC_FILE_LIST: [  ### ROOT_DIR only ###
+        'uv.lock',
+        'conda-lock.yml',
+        'requirements.txt',
+        '_env.sh',
+      ]
+      RM_STATIC_DIR_LIST: [  ### ROOT_DIR only ###
+        '{{joinPath .PROJ_PATH_ .VENV_DIR_}}',
+        '.venv',
+        '.ruff_cache',
+        '.task',
+      ]
+      RM_FILE_ROOT_PATTERNS: [  ### ROOT_DIR only ###
+        'conda-*.lock',
+        'requirements*.txt',
+      ]
+      RM_DIR_RECURSIVE_PATTERNS: [
+        '.jupyter_cache',
+        '__pycache__',
+        '.ipynb_checkpoints',
+      ]
+    ignore_error: true
+    silent: true
+    cmds:
+      - echo "Cleaning project..."
+      - for: { var: RM_STATIC_FILE_LIST } ### Remove static files from project root
+        cmd: |
+          if [ -f "{{.ITEM}}" ]; then
+            echo "  Removing {{.ITEM}}"
+            rm "{{.ITEM}}"
+          fi
+          if [ -e "{{.ITEM}}" ]; then
+            echo "WARNING: {{.ITEM}} found (and it should not be)!"
+          fi
+      - for: { var: RM_STATIC_DIR_LIST } ### Remove static directories from project root
+        cmd: |
+          if [ -d "{{.ITEM}}" ]; then
+            echo "  Removing {{.ITEM}}/"
+            rm -r "{{.ITEM}}"
+          fi
+          if [ -e "{{.ITEM}}" ]; then
+            echo "WARNING: {{.ITEM}} found (and it should not be)!"
+          fi
+      - for: { var: RM_FILE_ROOT_PATTERNS } ### Remove files matching patterns in project root
+        cmd: >
+          find "{{joinPath .PROJ_PATH_}}"
+          -maxdepth 1
+          -type f
+          -name "{{.ITEM}}"
+          -exec echo "  Removing {}" \;
+          -exec rm {} +
+      - for: { var: RM_DIR_RECURSIVE_PATTERNS } ### Remove directories matching patterns recursively
+        cmd: >
+          find "{{.ROOT_DIR}}"
+          -type d
+          -name "{{.ITEM}}"
+          -exec echo "  Removing {}" \;
+          -exec rm -r {} +
+      - task: exc-scrub-egg
+      - task: exc-scrub-egg # Remove *.egg-info dir
+      - echo "✅ Clean complete"
+
+  # === CODE QUALITY === #
+
+  lint:
+    desc: 'Run all linters and formatters (auto-fix enabled)'
+    deps: [check-install]
+    vars:
+      SRC_DIR_: '{{default .SRC_DIR_DEFAULT .SRC_DIR}}'
+    cmds:
+      - uv run ruff check --fix "{{.SRC_DIR_}}"
+      - uv run ruff format "{{.SRC_DIR_}}"
+      - uv run pylint --rcfile=pyproject.toml "{{.SRC_DIR_}}"
+      - cmd: |
+          if [ -f ".pre-commit-config.yaml" ]; then
+            echo "  Running pre-commit hooks..."
+            uvx pre-commit run --all-files # --parallel
+          fi
+      - task: lint-extras
+      - echo "✅ Linting complete"
+    preconditions:
+      - test -d "{{.SRC_DIR_}}"
+
+  lint-dry:
+    desc: 'Run linters in check mode (no auto-fix)'
+    deps: [check-install]
+    vars:
+      SRC_DIR_: '{{default .SRC_DIR_DEFAULT .SRC_DIR}}'
+    cmds:
+      - echo "Running linters (dry run)..."
+      - uv run ruff check "{{.SRC_DIR_}}"
+      - cmd: |
+          if [ -f ".pre-commit-config.yaml" ]; then
+            echo "  Running pre-commit hooks..."
+            uvx pre-commit run --all-files --show-diff-on-failure
+          fi
+    preconditions:
+      - test -d "{{.SRC_DIR_}}"
+
+  lint-extras:
+    desc: 'Lint additional directories specified in EXTRAS_DIRS_LIST'
+    deps: [check-install]
+    silent: true
+    cmds:
+      - for: { var: EXTRAS_DIRS_LIST }
+        cmd: |
+          if [ -d "{{.ITEM}}" ]; then
+            echo "Linting {{.ITEM}}..."
+            uv run ruff check --fix "{{.ITEM}}"
+            uv run ruff format "{{.ITEM}}"
+          else
+            echo "⚠️  WARNING: '{{.ITEM}}' does not exist or is not a directory"
+          fi
+
+  # === UTILITIES === #
+
+  activate:
+    desc: 'Open a subshell with the virtual environment activated'
+    aliases: [shell]
+    deps: [check-install]
+    vars:
+      PROJ_PATH_: '{{default .ENTRY_PATH .PROJ_PATH}}'
+      VENV_DIR_: '{{default .VENV_DIR_DEFAULT .VENV_DIR}}'
+      VENV_ACTIVATE_: '{{joinPath .PROJ_PATH_ .VENV_DIR_ "bin" "activate"}}'
+    silent: true
+    cmds:
+      ### TODO: add test if python virtual environment is already activated and only activate if not
+      - echo "Opening shell with virtual environment..."
+      # - zsh -i -c 'source "{{.VENV_ACTIVATE_}}" && exec zsh'
+      - zsh -i -c 'source "{{.VENV_ACTIVATE_}}" && zsh'
+
+  run:
+    desc: 'Run command in activated virtual environment'
+    aliases: [zsh, run-zsh]
+    internal: true
+    deps: [check-install]
+    vars:
+      PROJ_PATH_: '{{default .ENTRY_PATH .PROJ_PATH}}'
+      VENV_DIR_: '{{default .VENV_DIR_DEFAULT .VENV_DIR}}'
+      VENV_ACTIVATE_: '{{joinPath .PROJ_PATH_ .VENV_DIR_ "bin" "activate"}}'
+    cmds:
+      - >
+        zsh -i -c 'source "{{.VENV_ACTIVATE_}}" && {{.VENV_CMD}}'
+    preconditions:
+      - sh: '[ {{.ENTRY_PATH}} = "$(pwd)" ]'
+        msg: |
+          ❌ Path mismatch detected!
+              ENTRY_PATH does not match pwd. Perhaps you have a stale .env file?
+              ENTRY_PATH: {{.ENTRY_PATH}}
+              pwd: $(pwd)
+      - sh: '[ {{.ENTRY_PATH}} = {{.PROJ_PATH_}} ]'
+        msg: |
+          ❌ Path mismatch detected!
+              ENTRY_PATH does not match PROJ_PATH_. Perhaps you have a stale .env file?
+              ENTRY_PATH: {{.ENTRY_PATH}}
+              PROJ_PATH: {{.PROJ_PATH_}}
+          This might indicate a stale .env file.
+      - test -f "{{.VENV_ACTIVATE_}}"
+    requires:
+      vars: [VENV_CMD]
+
+  ###
+  # === INTERNAL HELPER TASKS === #
+  ###
+  
+  # === CHECKS === #
+
+  check-tools:
+    desc: 'Verify required tools are installed'
+    internal: true
+    silent: true
+    cmds:
+      - echo "Required tools are installed"
+    preconditions:
+      - sh: command -v uv >/dev/null 2>&1
+        msg: |
+          ❌ 'uv' is not installed.
+      - sh: command -v ruff >/dev/null 2>&1
+        msg: |
+          ❌ 'ruff' is not installed.
+
+  check-paths:
+    desc: 'Validate project paths'
+    internal: true
+    vars:
+      PROJ_PATH_: '{{default .ENTRY_PATH .PROJ_PATH}}'
+      SRC_DIR_: '{{default .SRC_DIR_DEFAULT .SRC_DIR}}'
+    preconditions:
+      - sh: '[ {{.ENTRY_PATH}} = {{.PROJ_PATH_}} ]'
+        msg: |
+          ❌ Path mismatch detected!
+              ENTRY_PATH does not match PROJ_PATH_. Perhaps you have a stale .env file?
+              ENTRY_PATH: {{.ENTRY_PATH}}
+              PROJ_PATH: {{.PROJ_PATH_}}
+          This might indicate a stale .env file.
+      - test -d "{{.PROJ_PATH_}}"
+      - test -d "{{.SRC_DIR_}}"
+    requires:
+      vars: [PROJ_PATH_, SRC_DIR_]
+
+  check-installable:
+    desc: 'Check if project can be installed'
+    internal: true
+    deps: [check-paths]
+    preconditions:
+      - test -f "pyproject.toml" # msg: "❌ No pyproject.toml found. Cannot install dependencies."
+
+  check-install:
+    desc: 'Verify virtual environment is properly installed'
+    internal: true
+    deps: [check-paths]
+    vars:
+      PROJ_PATH_: '{{default .ENTRY_PATH .PROJ_PATH}}'
+      VENV_DIR_: '{{default .VENV_DIR_DEFAULT .VENV_DIR}}'
+      VENV_ACTIVATE_: '{{joinPath .PROJ_PATH_ .VENV_DIR_ "bin" "activate"}}'
+    preconditions:
+      - sh: '[ {{.ENTRY_PATH}} = {{.PROJ_PATH_}} ]'
+        msg: |
+          ❌ Path mismatch detected!
+              ENTRY_PATH does not match PROJ_PATH_. Perhaps you have a stale .env file?
+              ENTRY_PATH: {{.ENTRY_PATH}}
+              PROJ_PATH: {{.PROJ_PATH_}}
+          This might indicate a stale .env file.
+      - test -f "pyproject.toml" # msg: "❌ No pyproject.toml found"
+      - test -f "uv.lock" # msg: "❌ No uv.lock found. Run 'task install' first."
+      - test -d "{{.VENV_DIR_}}" # msg: "❌ Virtual environment not found. Run 'task install' first."
+      - test -f "{{.VENV_ACTIVATE_}}" # msg: "❌ Virtual environment activation script not found"
+
+  # === EXC === #
+
+  exc-postinstall:
+    desc: 'Run post-installation scripts if available'
+    internal: true
+    vars:
+      PROJ_PATH_: '{{default .ENTRY_PATH .PROJ_PATH}}'
+      SRC_DIR_: '{{default .SRC_DIR_DEFAULT .SRC_DIR}}'
+      INSTALL_HELPER_SCRIPT: '{{joinPath .PROJ_PATH_ "utils" "install_helper.py"}}'
+    silent: true
+    cmds:
+      - |
+        if [ -f "{{.INSTALL_HELPER_SCRIPT}}" ]; then
+          echo "Running post-install script..."
+          uv run "{{.INSTALL_HELPER_SCRIPT}}" --projpath "{{.PROJ_PATH_}}" --srcdir "{{.SRC_DIR_}}"
+        else
+          echo "Skipping post-install. Install helper script not found at {{.INSTALL_HELPER_SCRIPT}}"
+        fi
+
+  exc-scrub-egg:
+    desc: 'Remove egg-info directories'
+    internal: true
+    deps: [check-paths]
+    vars:
+      PROJ_PATH_: '{{default .ENTRY_PATH .PROJ_PATH}}'
+      SRC_DIR_: '{{default .SRC_DIR_DEFAULT .SRC_DIR}}'
+    silent: true
+    cmds:
+      - >
+        find {{.PROJ_PATH_}}
+        -maxdepth 1
+        -type d
+        -name "*.egg-info"
+        -exec echo "  Removing {}" \;
+        -exec rm -r {} +
+      - >
+        find "{{joinPath .PROJ_PATH_ .SRC_DIR_}}"
+        -maxdepth 1
+        -type d
+        -name "*.egg-info"
+        -exec echo "  Removing {}" \;
+        -exec rm -r {} +
+    preconditions:
+      - test -d "{{.SRC_DIR_}}"
+
+  exc-store-env-state:
+    desc: 'Save current environment state for rollback'
+    internal: true
+    deps: [check-install]
+    vars:
+      PROJ_PATH_: '{{default .ENTRY_PATH .PROJ_PATH}}'
+      DATE_STR_DEFAULT: '$(date +%Y-%m-%d)'
+      DATE_STR_: '{{default .DATE_STR_DEFAULT .DATE_STR}}'
+      PRIOR_ENV_LOCKS_: '{{default .PRIOR_ENV_LOCKS_DEFAULT .PRIOR_ENV_LOCKS}}'
+      FNAME_PYPROJECTCOPY: 'pyproject-{{.DATE_STR_}}.toml'
+      FNAME_UVLOCK: 'uv-{{.DATE_STR_}}.lock'
+      FNAME_PIPFREEZE: 'requirements-{{.DATE_STR_}}.txt'
+      PATH_ENVLOCKS: '{{joinPath .PROJ_PATH_ .PRIOR_ENV_LOCKS_}}'
+      PATH_PYPROJECTCOPY: '{{joinPath .PATH_ENVLOCKS .FNAME_PYPROJECTCOPY}}'
+      PATH_UVLOCK: '{{joinPath .PATH_ENVLOCKS .FNAME_UVLOCK}}'
+      PATH_PIPFREEZE: '{{joinPath .PATH_ENVLOCKS .FNAME_PIPFREEZE}}'
+      RM_FILE_LIST: [
+        '{{.PATH_PYPROJECTCOPY}}',
+        '{{.PATH_UVLOCK}}',
+        '{{.PATH_PIPFREEZE}}',
+      ]
+    silent: true
+    cmds:
+      - cmd: mkdir -p "{{.PATH_ENVLOCKS}}"
+      - for: { var: RM_FILE_LIST }
+        cmd: |
+          if [ -f "{{.ITEM}}" ]; then
+            echo "removing {{.ITEM}}"
+            rm "{{.ITEM}}"
+          fi
+          if [ -e "{{.ITEM}}" ]; then
+            echo "WARNING: {{.ITEM}} should not be a directory!"
+          fi
+      - cp "pyproject.toml" "{{.PATH_PYPROJECTCOPY}}"
+      - cp "uv.lock" "{{.PATH_UVLOCK}}"
+      - task: run
+        vars:
+          VENV_CMD: "uv pip list --format=freeze > '{{.PATH_PIPFREEZE}}'" ### Has to be called using `run` because `uv pip list` uses the active python env
+        silent: true
+      - task: exc-scrub-egg
+      - echo "  Environment state saved to {{.PRIOR_ENV_LOCKS_}}/"
+
+  # === DEBUGGING === #
+
+  status:
+    desc: 'Show current environment status and Python version'
+    aliases: [env-status]
+    silent: true
+    cmds:
+      - |
+        echo "=== Python Environment Status ==="
+        if [ -d "{{.VENV_DIR_DEFAULT}}" ]; then
+          echo "Virtual environment exists: {{.VENV_DIR_DEFAULT}}"
+          if [ -f "{{.VENV_DIR_DEFAULT}}/bin/python" ]; then
+            PYTHON_VERSION=$({{.VENV_DIR_DEFAULT}}/bin/python --version 2>&1)
+            echo "   Python: $PYTHON_VERSION"
+          fi
+        else
+          echo "❌ No virtual environment found"
+        fi
+
+        if [ -f "uv.lock" ]; then
+          echo "Lock file exists: uv.lock"
+        else
+          echo "❌ No lock file found"
+        fi
+
+        if [ -f "pyproject.toml" ]; then
+          echo "Project file exists: pyproject.toml"
+        else
+          echo "❌ No project file found"
+        fi
+
+        echo ""
+        echo "Project path: {{.ENTRY_PATH}}"
+        echo "Source directory: {{default .SRC_DIR_DEFAULT .SRC_DIR}}"
+      - task: check-install
+
+  env-info:
+    desc: 'Debug task environment and paths'
+    aliases: [env-paths, env-debug]
+    internal: false
+    silent: true
+    cmds:
+      - task: _show-paths
+      - echo -e "\n=== DEBUG - python ==="
+      - task: _which-python
+      - echo -e "\n=== DEBUG - shell ==="
+      - task: _which-shell
+
+  _show-paths:
+    desc: 'Debug: Show all computed paths and variables'
+    aliases: [env-debug-paths]
+    internal: true
+    vars:
+      SRC_DIR_: '{{default .SRC_DIR_DEFAULT .SRC_DIR}}'
+      PROJ_PATH_: '{{default .ENTRY_PATH .PROJ_PATH}}'
+      VENV_DIR_: '{{default .VENV_DIR_DEFAULT .VENV_DIR}}'
+      VENV_ACTIVATE_: '{{joinPath .ENTRY_PATH .VENV_DIR_ "bin" "activate"}}'
+      PRIOR_ENV_LOCKS_: '{{default .PRIOR_ENV_LOCKS_DEFAULT .PRIOR_ENV_LOCKS}}'
+      PATH_ENVLOCKS_: '{{joinPath .ENTRY_PATH .PRIOR_ENV_LOCKS_}}'
+      DATE_STR_DEFAULT: '$(date +%Y-%m-%d)'
+      DATE_STR_: '{{default .DATE_STR_DEFAULT .DATE_STR}}'
+    silent: true
+    cmds:
+      - echo "=== DEBUG - env ==="
+      - printenv
+      - echo -e "\033[0m" # Reset color
+      - echo -e "\n=== DEBUG - paths ==="
+      - echo "[Current directory]     $(pwd)"
+      - echo "[PWD]                   $(PWD)"
+      - echo "[.DATE_STR_]            {{.DATE_STR_}}"
+      - echo ""
+      - echo "Task variables:"
+      - echo "  [.ROOT_DIR]           {{.ROOT_DIR}}"
+      - echo "  [.USER_WORKING_DIR]   {{.USER_WORKING_DIR}}"
+      - echo ""
+      - echo "Project root dir:"
+      - echo "[.PROJECTPATH]          {{.PROJECTPATH}}"
+      - echo ""
+      - echo "Passed vars:"
+      - echo "  [.SRC_DIR]            {{.SRC_DIR}}"
+      - echo "  [.EXTRAS_DIRS_LIST]   {{.EXTRAS_DIRS_LIST}}"
+      - echo "  [.VENV_DIR]           {{.VENV_DIR}}"
+      - echo "  [.PRIOR_ENV_LOCKS]    {{.PRIOR_ENV_LOCKS}}"
+      - echo "  [.PROJ_PATH]          {{.PROJ_PATH}}"
+      - echo "  [.DATE_STR]           {{.DATE_STR}}"
+      - echo ""
+      - echo "Computed vars:"
+      - echo "  [.ENTRY_PATH]         {{.ENTRY_PATH}}"
+      - echo "  [.SRC_DIR_]           {{.SRC_DIR_}}"
+      - echo "  [.PROJ_PATH_]         {{.PROJ_PATH_}}"
+      - echo "  [.VENV_DIR_]          {{.VENV_DIR_}}"
+      - echo "  [.VENV_ACTIVATE_]     {{.VENV_ACTIVATE_}}"
+      - echo "  [.PRIOR_ENV_LOCKS_]   {{.PRIOR_ENV_LOCKS_}}"
+      - echo "  [.PATH_ENVLOCKS_]     {{.PATH_ENVLOCKS_}}"
+      - echo ""
+      - echo "Extra variables:"
+      - echo "  [.EXTRAS_DIRS_LIST]   {{.EXTRAS_DIRS_LIST}}"
+      - echo -e "======\n"
+
+  _which-python:
+    desc: 'Debug: Show which Python is being used'
+    aliases: [env-debug-python]
+    internal: true
+    vars:
+      PYTHON_VERSION_: '{{default .PYTHON_VERSION_DEFAULT .PYTHON_VERSION}}'
+    cmds:
+      - echo "[.PYTHON_VERSION_]      {{.PYTHON_VERSION_}}"
+      - task: run
+        silent: true
+        vars:
+          VENV_CMD: 'which python && python --version'
+
+  _which-shell:
+    desc: 'Debug: Show which Shell is being used'
+    aliases: [env-debug-shell]
+    internal: true
+    silent: true
+    vars:
+      SHELL_FOUND:
+        sh: echo $0
+    cmds:
+      - echo "[Shell (tasks)] $0"
+      - echo "[Shell (task-sh)] {{.SHELL_FOUND}}"
+      - task: run
+        silent: true
+        vars:
+          VENV_CMD: 'echo "[Shell (run)] $0"'

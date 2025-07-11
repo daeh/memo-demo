@@ -1,0 +1,17 @@
+# Global metadata for all pages
+author: "Memo Team"
+date-format: "MMMM D, YYYY"
+lang: en
+
+# Open Graph metadata
+website:
+  open-graph: true
+  twitter-card: true
+  site-url: https://daeh.github.io/memo-demo/
+
+# Citation
+# citation:
+#   type: book
+
+# Comments
+comments: false

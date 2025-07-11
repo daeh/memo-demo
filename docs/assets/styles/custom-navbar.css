@@ -1,0 +1,417 @@
+/**
+ * Custom Navbar Styles
+ * Mimics Quarto's navbar appearance and headroom behavior
+ */
+
+.custom-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1030;
+  background-color: #212529;
+  border-bottom: 1px solid #495057;
+  transition: transform 0.3s ease-in-out;
+  will-change: transform;
+  display: block !important;
+  visibility: visible !important;
+}
+
+/* Headroom behavior classes */
+.custom-navbar.headroom--pinned {
+  transform: translateY(0%);
+}
+
+.custom-navbar.headroom--unpinned {
+  transform: translateY(-100%);
+}
+
+.custom-navbar.headroom--top {
+  /* Additional styles when at top */
+}
+
+.custom-navbar.headroom--not-top {
+  /* Additional styles when not at top */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.custom-navbar.headroom--bottom {
+  /* Additional styles when at bottom */
+}
+
+.custom-navbar.headroom--not-bottom {
+  /* Additional styles when not at bottom */
+}
+
+/* Navbar structure */
+.custom-navbar .custom-nav {
+  background-color: #212529;
+  padding: 0.5rem 1rem;
+  height: 3.5rem;
+  max-height: 3.5rem;
+  width: 100%;
+  display: flex !important;
+  overflow: hidden;
+}
+
+.custom-navbar .navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Status container on the far left */
+.custom-navbar .thebe-status-container {
+  flex: 0 0 auto;
+  margin-right: 1rem;
+  width: 25rem;
+  min-width: 20rem;
+  max-width: 25rem;
+  overflow: hidden;
+}
+
+.custom-navbar .thebe-status-container .thebe-status {
+  background: #6c757d;
+  color: #f8f9fa;
+  border: none;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.custom-navbar .thebe-status-container .thebe-status.ready {
+  background: #198754;
+  color: #fff;
+}
+
+.custom-navbar .thebe-status-container .thebe-status.loading {
+  background: #fd7e14;
+  color: #fff;
+}
+
+/* Style for the moved thebe-status-mounted element */
+.custom-navbar .thebe-status-container .thebe-status.thebe-status-mounted {
+  background: #6c757d;
+  color: #f8f9fa;
+  border: none;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.custom-navbar .thebe-status-container .thebe-status.thebe-status-mounted.ready {
+  background: #198754;
+  color: #fff;
+}
+
+.custom-navbar .thebe-status-container .thebe-status.thebe-status-mounted .thebe-status-stub {
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.custom-navbar .thebe-status-container .thebe-status.thebe-status-mounted .thebe-status-field {
+  font-weight: normal;
+  flex-shrink: 0;
+}
+
+.custom-navbar .thebe-status-container .thebe-status.thebe-status-mounted .thebe-status-message {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-left: 0.5rem;
+  display: block; /* Show the dynamic message */
+}
+
+
+/* Custom navbar tools */
+.custom-navbar .custom-navbar-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  flex-shrink: 0;
+  height: 100%;
+}
+
+/* Thebe controls in navbar */
+.custom-navbar .thebe-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 100%;
+}
+
+/* Thebe actions in navbar */
+.custom-navbar .thebe-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 100%;
+}
+
+.custom-navbar .thebe-action-button {
+  background: #6c757d;
+  color: #f8f9fa;
+  border: none;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.custom-navbar .thebe-action-button:hover {
+  background: #0d6efd;
+}
+
+.custom-navbar .thebe-action-button:disabled {
+  background: #495057;
+  color: #adb5bd;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Activate button in navbar */
+.custom-navbar .activate-btn {
+  background: #0d6efd;
+  color: #fff;
+  border: none;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.custom-navbar .activate-btn:hover {
+  background: #0b5ed7;
+}
+
+.custom-navbar .tool-divider {
+  width: 1px;
+  height: 1.5rem;
+  background-color: #495057;
+  margin: 0 0.5rem;
+}
+
+.custom-navbar .tool-group {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.custom-navbar .tool-group .tool-btn {
+  border-radius: 0;
+}
+
+.custom-navbar .tool-group .tool-btn:first-child {
+  border-radius: 0.375rem 0 0 0.375rem;
+}
+
+.custom-navbar .tool-group .tool-btn:last-child {
+  border-radius: 0 0.375rem 0.375rem 0;
+}
+
+/* Responsive text display */
+/* Default: show full text on large screens */
+.btn-text-full { display: inline; }
+.btn-text-medium { display: none; }
+.btn-text-small { display: none; }
+
+/* Medium screens (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .btn-text-full { display: none; }
+  .btn-text-medium { display: inline; }
+  .btn-text-small { display: none; }
+  
+  /* Reduce status container width */
+  .custom-navbar .thebe-status-container {
+    width: 18rem;
+    min-width: 15rem;
+    max-width: 18rem;
+  }
+  
+  /* Reduce button padding */
+  .custom-navbar .thebe-action-button,
+  .custom-navbar .activate-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.825rem;
+  }
+}
+
+/* Small screens (< 768px) */
+@media (max-width: 767px) {
+  .btn-text-full { display: none; }
+  .btn-text-medium { display: none; }
+  .btn-text-small { display: inline; }
+  
+  /* Keep navbar horizontal on small screens */
+  .custom-navbar .navbar-container {
+    flex-direction: row;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  /* Minimize status container */
+  .custom-navbar .thebe-status-container {
+    width: auto;
+    min-width: auto;
+    max-width: 8rem;
+    margin-right: 0.5rem;
+  }
+  
+  /* Shorter status display */
+  .custom-navbar .thebe-status-container .thebe-status,
+  .custom-navbar .thebe-status-container .thebe-status.thebe-status-mounted {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    height: 2rem;
+  }
+  
+  /* Hide status message on small screens, only show status field */
+  .custom-navbar .thebe-status-container .thebe-status.thebe-status-mounted .thebe-status-message {
+    display: none;
+  }
+  
+  /* Compact buttons */
+  .custom-navbar .thebe-action-button,
+  .custom-navbar .activate-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.825rem;
+    height: 2rem;
+    min-width: 2.5rem;
+  }
+  
+  /* Reduce gap between elements */
+  .custom-navbar .custom-navbar-tools {
+    gap: 0.25rem;
+  }
+  
+  .custom-navbar .thebe-actions {
+    gap: 0.25rem;
+  }
+  
+  /* Smaller divider */
+  .custom-navbar .tool-divider {
+    height: 1.25rem;
+    margin: 0 0.25rem;
+  }
+  
+  /* Reduce navbar height */
+  .custom-navbar .custom-nav {
+    height: 2.75rem;
+    max-height: 2.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+/* Extra small screens (< 480px) */
+@media (max-width: 480px) {
+  /* Ultra-compact status */
+  .custom-navbar .thebe-status-container {
+    max-width: 5rem;
+  }
+  
+  /* Hide status stub text, only show value */
+  .custom-navbar .thebe-status-container .thebe-status.thebe-status-mounted .thebe-status-stub {
+    display: none;
+  }
+  
+  /* Even more compact buttons */
+  .custom-navbar .thebe-action-button,
+  .custom-navbar .activate-btn {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Responsive behavior - fallback for very old layout */
+@media (max-width: 768px) {
+  /* Only apply vertical layout if navbar gets too cramped */
+  @media (max-width: 360px) {
+    .custom-navbar .navbar-container {
+      flex-direction: column;
+      gap: 0.5rem;
+      height: auto;
+      max-height: none;
+      padding: 0.5rem;
+    }
+    
+    .custom-navbar .custom-nav {
+      height: auto;
+      max-height: none;
+    }
+    
+    .custom-navbar .custom-navbar-tools {
+      margin-left: 0;
+      justify-content: center;
+    }
+    
+    .custom-navbar .thebe-status-container {
+      margin-right: 0;
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+}
+
+/* Ensure body has proper padding to account for fixed navbar */
+body {
+  padding-top: 3.5rem !important;
+}
+
+/* Responsive body padding */
+@media (max-width: 767px) {
+  body {
+    padding-top: 2.75rem !important;
+  }
+}
+
+@media (max-width: 360px) {
+  body {
+    padding-top: 5rem !important; /* Account for vertical layout */
+  }
+}
+
+/* Hide any default navbar that might still show */
+#quarto-header {
+  display: none !important;
+}
+
+/* GitHub icon - use SVG instead of font icon */
+.custom-navbar .github-icon {
+  display: inline-block;
+  width: 1.2em;
+  height: 1.2em;
+  vertical-align: text-bottom;
+}

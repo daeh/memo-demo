@@ -1,0 +1,215 @@
+/* Thebe styling for interactive notebook pages */
+/* Following Quarto and modern CSS best practices */
+
+/* CSS Custom Properties for theming */
+:root {
+  --thebe-primary: #2196f3;
+  --thebe-success: #4caf50;
+  --thebe-error: #f44336;
+  --thebe-warning: #ff9800;
+  --thebe-border-radius: 0.375rem;
+  --thebe-transition: all 0.2s ease;
+  --thebe-font-family: var(
+    --bs-font-monospace,
+    "SFMono-Regular",
+    Consolas,
+    "Liberation Mono",
+    Menlo,
+    monospace
+  );
+}
+
+/* Apply styles to thebe buttons */
+button[class*="thebe"] {
+  background-color: var(--thebe-primary) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: var(--thebe-border-radius) !important;
+  padding: 0.375rem 0.75rem !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: var(--thebe-transition) !important;
+}
+
+button[class*="thebe"]:hover {
+  background-color: #1976d2 !important;
+}
+
+/* Thebe controls container */
+.thebe-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1.5rem 0;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* Action buttons container (left side) */
+.thebe-controls .thebe-actions {
+  display: none; /* Initially hidden until kernel is ready */
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  order: 2;
+}
+
+/* Show custom action buttons when kernel is ready */
+.thebe-controls.ready .thebe-actions {
+  display: flex !important;
+}
+
+/* Activate button (left side) */
+.thebe-controls .btn-primary[data-thebe-activate] {
+  order: 1;
+  margin-right: auto;
+}
+
+/* Status indicator styling (for status div, not button) */
+.thebe-status {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border: 2px solid;
+  border-radius: var(--thebe-border-radius);
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: default;
+  transition: var(--thebe-transition);
+  user-select: none;
+  white-space: nowrap;
+  order: 3;
+  margin-left: auto;
+}
+
+.thebe-status.loading {
+  border-color: var(--thebe-primary);
+  background-color: rgba(33, 150, 243, 0.08);
+  color: var(--thebe-primary);
+}
+
+.thebe-status.loading::before {
+  content: "";
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: thebe-spin 0.8s linear infinite;
+}
+
+.thebe-status.ready {
+  border-color: var(--thebe-success) !important;
+  background-color: rgba(76, 175, 80, 0.08) !important;
+  color: var(--thebe-success) !important;
+}
+
+.thebe-status.failed {
+  border-color: var(--thebe-error);
+  background-color: rgba(244, 67, 54, 0.08);
+  color: var(--thebe-error);
+}
+
+@keyframes thebe-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Action buttons styling */
+.thebe-action-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--bs-secondary, #6c757d);
+  color: white;
+  border: none;
+  border-radius: var(--thebe-border-radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--thebe-transition);
+}
+
+.thebe-action-button:hover {
+  background-color: var(--bs-dark, #495057);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.thebe-action-button:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Special styling for run all button */
+.thebe-action-button#thebe-run-all {
+  background-color: var(--thebe-success);
+}
+
+.thebe-action-button#thebe-run-all:hover {
+  background-color: #388e3c;
+}
+
+/* Special styling for restart button */
+.thebe-action-button#thebe-restart {
+  background-color: var(--thebe-warning);
+}
+
+.thebe-action-button#thebe-restart:hover {
+  background-color: #f57c00;
+}
+
+/* Special styling for restart & run all button */
+.thebe-action-button#thebe-restart-run-all {
+  background-color: var(--thebe-primary);
+}
+
+.thebe-action-button#thebe-restart-run-all:hover {
+  background-color: #1976d2;
+}
+
+/* CodeMirror auto-sizing */
+.CodeMirror {
+  height: auto !important;
+  min-height: 100px !important;
+  max-height: 100vh !important;
+}
+
+.CodeMirror-scroll {
+  overflow-y: auto !important;
+  max-height: 100vh !important;
+}
+
+/* Status container width and overflow */
+.thebe-status {
+  max-width: 50vw !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* Hide status div when not activated */
+.thebe-controls:not(.activated) .thebe-status {
+  display: none !important;
+}
+
+/* Ensure activate button stays visible */
+.thebe-controls .btn-primary[data-thebe-activate] {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Hide cell run buttons by default - only those inside thebe-cell */
+.thebe-cell .thebe-controls:not(.ready) {
+  display: none !important;
+}
+
+/* Show cell run buttons when ready class is added */
+.thebe-cell .thebe-controls.ready {
+  display: flex !important;
+}

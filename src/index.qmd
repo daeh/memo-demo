@@ -1,0 +1,54 @@
+---
+title: "memo"
+subtitle: ""
+author: ""
+page-layout: full
+sidebar: false
+toc: false
+format:
+  html:
+    include-in-header:
+      - file: includes/thebe.html
+    css: assets/styles/custom.css
+---
+
+<!-- Thebe status widget mount point (hidden until moved to navbar) -->
+<div class="thebe-status" style="display: none;"></div>
+
+
+
+```{python}
+from memo import memo
+import jax
+import jax.numpy as np
+from enum import IntEnum
+
+print(jax.__version__)
+```
+
+### Suggested demos
+
+- [Scalar Implicature](demo-scalar-implicature.qmd)
+
+- [Question-asking via expected information gain](demo-eig.qmd)
+
+- [Planning and inverse-planning in an MDP](demo-mdp.qmd) 
+
+<!-- 
+- [Scalar Implicature](https://github.com/kach/memo/blob/main/demo/demo-scalar.py)
+
+- [Question-asking via expected information gain](https://github.com/kach/memo/blob/main/demo/demo-eig.ipynb)
+
+- [Planning and inverse-planning in an MDP](https://github.com/kach/memo/blob/main/demo/demo-mdp.ipynb) 
+-->
+
+### `memo` resources
+
+- [`memo` GitHub Repo](https://github.com/kach/memo)
+
+- [The `memo` handbook](https://github.com/kach/memo/blob/main/Handbook.pdf)
+
+- [GitHub Discussions](https://github.com/kach/memo/discussions) - To ask questions about memo, and to get help from other memo users.
+
+- [Mailing list](https://lists.csail.mit.edu/mailman/listinfo/memo-lang) - For updates on memo's development.
+

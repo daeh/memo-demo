@@ -1,0 +1,56 @@
+<!-- Font Awesome for ipywidgets icons -->
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"
+  integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg=="
+  crossorigin="anonymous"
+/>
+
+<!-- Thebe CSS -->
+<link rel="stylesheet" href="assets/styles/thebe.css" />
+
+<!-- Custom Navbar CSS -->
+<link rel="stylesheet" href="assets/styles/custom-navbar.css" />
+
+<!-- Thebe Configuration (MUST be loaded before Thebe library) -->
+<script type="text/x-thebe-config">
+  {
+    "requestKernel": true,
+    "binderOptions": {
+      "repo": "daeh/memo-demo",
+      "ref": "main",
+      "binderUrl": "https://mybinder.org"
+    },
+    "kernelOptions": {
+      "kernelName": "python3"
+    },
+    "selector": "[data-executable=\"true\"]",
+    "mountRunButton": true,
+    "mountRunAllButton": false,
+    "mountRestartButton": false,
+    "mountRestartAllButton": false,
+    "mountActivateWidget": false,
+    "mountStatusWidget": true,
+    "codeMirrorConfig": {
+      "theme": "default",
+      "lineNumbers": true,
+      "autoCloseBrackets": true,
+      "indentUnit": 4,
+      "indentWithTabs": false,
+      "smartIndent": true,
+      "extraKeys": {
+        "Cmd-/": "toggleComment",
+        "Ctrl-/": "toggleComment"
+      }
+    }
+  }
+</script>
+
+<!-- Load Thebe library (specific version for stability) -->
+<script src="https://unpkg.com/thebe@0.9.2/lib/index.js"></script>
+
+<!-- Custom Thebe initialization (loaded AFTER Thebe library) -->
+<script src="assets/js/thebe-config.js"></script>
+
+<!-- Custom Navbar JS -->
+<script src="assets/js/custom-navbar.js"></script>

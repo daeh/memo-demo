@@ -1,0 +1,44 @@
+/* Custom styles for Quarto site */
+
+/* Hero banner */
+.hero-banner {
+  text-align: center;
+  padding: 4rem 1rem;
+  margin-bottom: 3rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 0.5rem;
+}
+
+.hero-banner h2 {
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.hero-banner .btn {
+  margin: 0.5rem;
+}
+
+/* Button styles */
+.btn-primary {
+  background-color: #667eea;
+  border-color: #667eea;
+}
+
+.btn-primary:hover {
+  background-color: #5a67d8;
+  border-color: #5a67d8;
+}
+
+/* Grid improvements */
+.grid {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero-banner {
+    padding: 2rem 1rem;
+  }
+}
