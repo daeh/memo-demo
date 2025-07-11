@@ -1,0 +1,112 @@
+version: "3"
+
+vars:
+  SRC_DIR: "src"
+  VENV_DIR: ".venv"
+  PYTHON_VERSION: "3.13"
+  DOCS_DIR: "docs"
+  PRIOR_ENV_LOCKS: "_prior_environments-gitignore"
+
+env:
+  SHELL: "/bin/zsh"
+
+includes:
+  python:
+    taskfile: "./taskfiles/TasksPython.yml"
+    dir: "./"
+    vars:
+      SRC_DIR: "{{.SRC_DIR}}"
+      VENV_DIR: "{{.VENV_DIR}}"
+      PRIOR_ENV_LOCKS: "{{.PRIOR_ENV_LOCKS}}"
+
+tasks:
+  default:
+    cmds:
+      - task: build
+
+  install:
+    desc: "Install Python dependencies"
+    deps: [python:check-installable]
+    cmds:
+      - task: python:install
+
+  clean:
+    desc: "Clean build artifacts and cache files"
+    cmds:
+      - rm -rf {{.DOCS_DIR}}
+      - rm -rf {{.SRC_DIR}}/.quarto
+      - rm -rf {{.SRC_DIR}}/_freeze
+      - rm -rf {{.SRC_DIR}}/.jupyter_cache
+      - find {{.SRC_DIR}} -name "*.quarto_ipynb" -delete 2>/dev/null || true
+      - find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+
+  lint:
+    desc: "Run linting tools"
+    deps: [python:check-install]
+    cmds:
+      - task: python:lint
+
+  lint-fix:
+    desc: "Run linting tools with auto-fix"
+    deps: [python:check-install]
+    cmds:
+      - task: python:lint-fix
+
+  build:
+    desc: "Build the Quarto website to docs/"
+    deps: [clean, python:check-install]
+    cmds:
+      - task: python:run-zsh
+        vars:
+          VENV_CMD: "cd {{.SRC_DIR}} && quarto render"
+    preconditions:
+      - test -f "{{.SRC_DIR}}/_quarto.yml"
+      - test -d "{{.SRC_DIR}}"
+
+  preview:
+    desc: "Preview the website with live reload"
+    deps: [python:check-install]
+    cmds:
+      - task: build
+      - task: python:run-zsh
+        vars:
+          VENV_CMD: "cd {{.SRC_DIR}} && quarto preview --port 4200"
+    preconditions:
+      - test -f "{{.SRC_DIR}}/_quarto.yml"
+      - test -d "{{.SRC_DIR}}"
+
+  serve:
+    desc: "Serve the built website locally"
+    cmds:
+      - python -m http.server 8000 --directory {{.DOCS_DIR}}
+    preconditions:
+      - test -d "{{.DOCS_DIR}}"
+
+  check:
+    desc: "Check the project for issues"
+    deps: [python:check-install]
+    cmds:
+      - task: lint
+      - task: python:run-zsh
+        vars:
+          VENV_CMD: "cd {{.SRC_DIR}} && quarto check"
+
+  deploy:dev:
+    desc: "Build and deploy to dev branch"
+    deps: [build]
+    cmds:
+      - git add --all docs/
+      - git commit -m "Deploy to dev branch - $(date)"
+      - git push origin HEAD:dev
+    preconditions:
+      - test -d "{{.DOCS_DIR}}"
+
+  deploy:
+    desc: "Build and deploy to main branch"
+    deps: [build]
+    cmds:
+      - git add --all docs/
+      - git commit -m "Deploy to main branch - $(date)"
+      - git push origin main
+    preconditions:
+      - test -d "{{.DOCS_DIR}}"

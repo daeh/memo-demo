@@ -1,0 +1,119 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "window.title": "memo-demo",
+    "python.languageServer": "Pylance",
+    "python.analysis.diagnosticMode": "workspace",
+    // "python.envFile": "${workspaceFolder}/.env",
+    "jupyter.interactiveWindow.creationMode": "single",
+    "jupyter.interactiveWindow.cellMarker.decorateCells": "allCells",
+    "editor.formatOnSave": true,
+    "editor.detectIndentation": false, // testing/
+    "editor.insertSpaces": true, // testing
+    "[python]": {
+      "editor.defaultFormatter": "charliermarsh.ruff",
+      "editor.tabSize": 4, // testing
+      "editor.codeActionsOnSave": {
+        "source.fixAll": "explicit",
+        "source.organizeImports": "explicit"
+      }
+    },
+    "[quarto]": {
+      "editor.tabSize": 4, // testing
+      "editor.defaultFormatter": "quarto.quarto",
+      "editor.formatOnSave": false
+    },
+    "[javascript][javascriptreact][typescript][typescriptreact]": {
+      // "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.tabSize": 2, // testing
+      "editor.insertSpaces": true,
+      "prettier.tabWidth": 2
+      // "editor.codeActionsOnSave": {
+      //   "source.fixAll.eslint": "explicit"
+      // }
+    },
+    "[html]": {
+      "editor.tabSize": 2, // testing
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[json][jsonc]": {
+      "editor.tabSize": 2, // testing
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[css][scss][less]": {
+      "editor.tabSize": 2, // testing
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    //// for js/ts generally ////
+    // "eslint.enable": true,
+    // "eslint.format.enable": true,
+    // "eslint.useFlatConfig": true,
+    // "prettier.configPath": "./prettier.config.cjs", // this is a temp fix for VSCode
+    // "typescript.enablePromptUseWorkspaceTsdk": true,
+    /* for .yarnrc.yml > nodeLinker: pnp */
+    // "eslint.nodePath": ".yarn/sdks",
+    // "typescript.tsdk": ".yarn/sdks/typescript/lib",
+    // "prettier.prettierPath": ".yarn/sdks/prettier/index.cjs",
+    /* for .yarnrc.yml > nodeLinker: node-modules OR nodeLinker: pnpm */
+    // "prettier.prettierPath": "./node_modules/prettier",
+    /* end */
+    "files.exclude": {
+      ".venv": true,
+      "_prior_environments*/": true,
+      "requirements.txt": true,
+      "**/*.lock": true,
+      "**/node_modules": true,
+      "**/.yarn": true,
+      "**/.pnp.*": true,
+      "**/.ruff_cache": true
+    },
+    "search.exclude": {
+      "docs/": true
+    },
+    "explorer.expandSingleFolderWorkspaces": true,
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.patterns": {
+      "*.ts": "${capture}.js",
+      "*.js": "${capture}.js.map, ${capture}.min.js, ${capture}.d.ts",
+      "*.jsx": "${capture}.js",
+      "*.tsx": "${capture}.ts",
+      "tsconfig.json": "tsconfig.*.json",
+      "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb"
+    },
+    "quarto.render.renderOnSave": true,
+    "cSpell.maxNumberOfProblems": 1000,
+    "cSpell.reportUnknownWords": true,
+  },
+  "extensions": {
+    "recommendations": [
+      "arcanis.vscode-zipfs",
+      "bmalehorn.shell-syntax",
+      "charliermarsh.ruff",
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "ms-python.black-formatter",
+      "ms-python.debugpy",
+      "ms-python.pylint",
+      "ms-python.python",
+      "ms-python.vscode-pylance",
+      "ms-toolsai.jupyter",
+      // "njqdev.vscode-python-typehint",
+      "ow.vscode-subword-navigation",
+      "redhat.vscode-yaml",
+      "tamasfe.even-better-toml",
+      "streetsidesoftware.code-spell-checker",
+      "task.vscode-task",
+      "visualstudioexptteam.vscodeintellicode",
+      "gruntfuggly.todo-tree",
+      "74th.monokai-charcoal-high-contrast",
+      "quarto.quarto",
+      "adpyke.codesnap",
+      "alexhammans.pandoc-grid-table"
+    ]
+  }
+}

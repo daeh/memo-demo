@@ -1,0 +1,237 @@
+[project]
+name = "memo-demo"
+version = "0.1.0"
+description = "Interactive memo-lang demonstrations with Thebe and Binder"
+authors = [{name = "Dae Houlihan", email = "dae.houlihan@dartmouth.edu"}]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    ### i/o ###
+    "python-dotenv>=1.1.0",
+    "toml>=0.10.2",
+    "pyyaml>=6.0.2",
+    ### scientific computing ###
+    "numpy>=2.0.2",
+    "optype[numpy]>=0.9.3",
+    "pandas>=2.2.3",
+    "scipy>=1.15.2",
+    "scikit-learn>=1.6.1",
+    "networkx>=3.4.2",
+    "pydantic>=2.11.3",
+    "tqdm>=4.67.1",
+    ### memo ###
+    "jax>=0.5.3",
+    "memo-lang>=1.1.2",
+    "xarray>=2025.3.1",
+    ### plotting ###
+    "matplotlib>=3.10.1",
+    "seaborn>=0.13.2",
+    "ipywidgets>=8.1.5",
+]
+
+[dependency-groups]
+dev = [
+    ### interactive kernel ###
+    "ipython>=9.1.0",
+    "ipykernel>=6.29.5",
+    "jupyterlab>=4.4.0",
+    "jupyter-cache>=1.0.1",
+    ### linting ###
+    "pylint>=3.3.6",
+    "astroid>=3.3.9",
+    "ruff>=0.11.4",
+    ### publishing ###
+    "pre-commit>=4.2.0",
+    ### scientific computing ###
+    "pandas-stubs>=2.2.3.250308",
+    "scipy-stubs>=1.15.2.2",
+]
+
+### to add pygrapviz:
+### CFLAGS="-I$(brew --prefix graphviz)/include" LDFLAGS="-L$(brew --prefix graphviz)/lib" task install
+### (CFLAGS="-I$(brew --prefix graphviz)/include" LDFLAGS="-L$(brew --prefix graphviz)/lib" uv add pygraphviz)
+
+[tool.setuptools.packages.find]
+where = ["."]  # list of folders that contain the packages (["."] by default)
+include = ["src"]  # package names should match these glob patterns (["*"] by default)
+### exclude = ["my_package.tests*"]  # exclude packages matching these glob patterns (empty by default)
+### namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
+
+[tool.ruff]
+line-length = 120
+fix = true
+
+include = ["pyproject.toml", "src/**/*.py"]
+exclude = [
+    "**/.git",
+    "**/.vscode",
+    "**/.venv",
+    "**/.jupyter_cache",
+    "**/.ipynb_checkpoints",
+    "**/.ruff_cache",
+    "**/__pypackages__",
+    "**/__pycache__",
+    "**/*_lintignore*",
+    "**/*-lintignore*",
+    "docs",
+    "_references",
+]
+
+[tool.ruff.lint]
+select = [
+    # flake8-2020
+    "YTT",
+    # flake8-bandit
+    "S",
+    # flake8-bugbear
+    "B",
+    # flake8-builtins
+    "A",
+    # flake8-comprehensions
+    "C4",
+    # flake8-debugger
+    "T10",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+    # mccabe
+    "C90",
+    # pycodestyle
+    "E", "W",
+    # pyflakes
+    "F",
+    # pygrep-hooks
+    "PGH",
+    # pyupgrade
+    "UP",
+    # ruff
+    "RUF",
+    # tryceratops
+    "TRY",
+]
+ignore = [
+    "F401", ### unused-import
+    "F841", ### unused-variable
+    # "E501", ### line-too-long
+    # "E731", ### lambda-assignment # disallow lambda
+    "S101", ### assert # disallow asserts
+    "C408", ### unnecessary-collection-call # disallow dict(), list(), tuple()
+    "S301", ### suspicious-pickle-usage # pickle is security risk for untrusted data
+    "C901", ### complex-structure
+]
+unfixable = [
+    "F401", ### unused-import
+]
+
+
+[tool.ruff.lint.isort]
+lines-between-types = 1
+
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+
+[tool.ruff.format]
+preview = true
+
+
+[tool.pylint.MAIN]
+init-hook = "import sys; sys.path.insert(0, 'src'); sys.path.insert(0, 'quartobook')"
+ignore-paths = ["(^|.*/)src/models/.*"] ### RegExp, not glob
+ignore-patterns = [
+    ".*[-_]lintignore.*",
+    ".*[-_]unused\\.py",
+    ".*[-_]unused/.+",
+    ".*[-_]UNUSED/.+",
+    # "quartobook",
+] ### RegExp, not glob
+
+
+[tool.pylint.messages_control]
+enable = [
+    "redefined-builtin",
+    "unused-wildcard-import",
+]
+disable = [
+    "unused-import",
+    "import-outside-toplevel",
+    "wrong-import-order ",
+    "wrong-import-position",
+    "line-too-long",
+    "trailing-whitespace",
+    "invalid-name",
+    "missing-module-docstring",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "pointless-string-statement",
+    "pointless-statement",
+    "too-many-arguments",
+    "too-many-locals",
+    "too-many-statements",
+    "f-string-without-interpolation",
+    "broad-exception-caught",
+    "broad-exception-raised",
+    "unused-variable",
+    "use-list-literal",
+    "use-dict-literal",
+    "fixme",
+    "logging-fstring-interpolation",
+    ### memo ###
+    # "redefined-outer-name",
+    # "undefined-variable",
+    # "used-before-assignment",
+    "function-redefined", ### E0102
+    # "not-callable", ### E1102
+]
+
+
+[tool.pyright]
+# exclude: Files/folders are completely ignored and not parsed at all
+# ignore: Files are still parsed (for dependencies) but no errors are reported
+root = ["src"]
+include = ["src", "quartobook", "utils"]
+ignore = [ ### Specifies directories or files that Pyright should not report errors for, but will still parse and analyze them if they are imported elsewhere. Globs.
+    "**/*_unused.py",
+    "**/_unused/",
+    "**/*_UNUSED*",
+    "**/*_lintignore*",
+    "**/*-lintignore*",
+    "quartobook",
+    "**/models/",
+]
+exclude = [ ### Specifies directories or files that Pyright should completely ignore, meaning it will not parse, analyze, or check them at all. Globs.
+    "**/.git",
+    "**/.vscode",
+    "**/.venv",
+    "**/.jupyter_cache",
+    "**/.ipynb_checkpoints",
+    "**/.ruff_cache",
+    "**/__pypackages__",
+    "**/__pycache__",
+    "**/node_modules",
+    "**/.yarn",
+    "**/yarn.lock",
+    "**/build",
+    "**/dist",
+    "src/experimental",
+    "src/typestubs",
+    "**/_site",
+    "**/_book",
+    "**/_freeze",
+]
+
+pythonVersion = "3.12"
+pythonPlatform = "Darwin"
+
+executionEnvironments = [
+    { root = "src" },
+]
+
+# reportGeneralTypeIssues = "error"
+reportMissingImports = "error"
+# reportMissingTypeStubs = "information"
+reportUnusedImport = "information"
+reportUnusedClass = "error"
+reportUnusedFunction = "warning"

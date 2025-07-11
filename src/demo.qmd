@@ -1,0 +1,72 @@
+---
+title: "memo"
+subtitle: ""
+author: ""
+page-layout: full
+sidebar: false
+toc: false
+format:
+  html:
+    include-in-header:
+      - file: includes/thebe.html
+    css: assets/styles/custom.css
+---
+
+<!-- Thebe status widget mount point (hidden until moved to navbar) -->
+<div class="thebe-status" style="display: none;"></div>
+
+
+
+```{python}
+from memo import memo
+import jax
+import jax.numpy as np
+from enum import IntEnum
+
+print(jax.__version__)
+```
+
+## Interactive Matplotlib Example
+
+Here's an interactive sine plot using ipywidgets:
+
+```{python}
+import ipywidgets as widgets
+from IPython.display import display
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Use inline backend for basic display
+%matplotlib inline
+
+x = np.linspace(0,10)
+
+def sine_func(x, w, amp):
+    return amp*np.sin(w*x)
+
+# Create interactive widgets
+w_slider = widgets.FloatSlider(value=1, min=0, max=4, step=0.25, description='w:')
+amp_slider = widgets.FloatSlider(value=1, min=0, max=4, step=0.1, description='amp:')
+output = widgets.Output()
+
+def update_plot(change):
+    with output:
+        output.clear_output(wait=True)
+        plt.figure(figsize=(8, 4))
+        plt.ylim(-4, 4)
+        plt.plot(x, sine_func(x, w_slider.value, amp_slider.value))
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title(f'Sine wave: y = {amp_slider.value:.1f} * sin({w_slider.value:.2f} * x)')
+        plt.grid(True)
+        plt.show()
+
+w_slider.observe(update_plot, names='value')
+amp_slider.observe(update_plot, names='value')
+
+# Initial plot
+update_plot(None)
+
+# Display widgets
+display(widgets.VBox([w_slider, amp_slider, output]))
+```

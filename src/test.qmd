@@ -1,0 +1,158 @@
+---
+title: Thebe Kernel File Access Test
+format:
+  html:
+    include-in-header:
+      - file: includes/thebe.html
+    css: assets/styles/custom.css
+---
+
+<!-- Thebe status widget mount point (hidden until moved to navbar) -->
+<div class="thebe-status" style="display: none;"></div>
+
+## Testing Kernel File Access
+
+This notebook helps debug what files the Thebe kernel can access.
+
+### Current Working Directory
+
+```{python}
+import os
+print("Current working directory:", os.getcwd())
+```
+
+### List Files in Current Directory
+
+```{python}
+import os
+files = os.listdir('.')
+print(f"Files in current directory ({len(files)} total):")
+for f in sorted(files)[:20]:  # Show first 20 files
+    print(f"  - {f}")
+if len(files) > 20:
+    print(f"  ... and {len(files) - 20} more files")
+```
+
+### Check for Common Directories
+
+```{python}
+import os
+
+dirs_to_check = [
+    'src',
+    'src/assets',
+    'src/assets/img',
+    'assets',
+    'assets/img',
+    'demos',
+    'demos/assets',
+    '../assets',
+    '../src',
+    '.'
+]
+
+print("Checking for directories:")
+for dir_path in dirs_to_check:
+    exists = os.path.exists(dir_path)
+    is_dir = os.path.isdir(dir_path) if exists else False
+    print(f"  {dir_path:<20} exists: {exists:<5} is_dir: {is_dir}")
+```
+
+### Check for the Logo Maze Image
+
+```{python}
+import os
+
+image_paths = [
+    'src/assets/img/logo-maze.png',
+    'assets/img/logo-maze.png',
+    'logo-maze.png',
+    '../assets/img/logo-maze.png',
+    'src/demos/assets/logo-maze.png',  # Old path
+    'demos/assets/logo-maze.png'
+]
+
+print("Checking for logo-maze.png:")
+for path in image_paths:
+    exists = os.path.exists(path)
+    print(f"  {path:<40} exists: {exists}")
+    if exists:
+        print(f"    -> Full path: {os.path.abspath(path)}")
+```
+
+### List Files in src Directory (if it exists)
+
+```{python}
+import os
+
+if os.path.exists('src') and os.path.isdir('src'):
+    print("Contents of 'src' directory:")
+    for root, dirs, files in os.walk('src'):
+        level = root.replace('src', '').count(os.sep)
+        indent = ' ' * 2 * level
+        print(f'{indent}{os.path.basename(root)}/')
+        subindent = ' ' * 2 * (level + 1)
+        for file in files[:5]:  # Limit files shown per directory
+            print(f'{subindent}{file}')
+        if len(files) > 5:
+            print(f'{subindent}... and {len(files) - 5} more files')
+else:
+    print("'src' directory not found")
+```
+
+### Python Path and Module Search Paths
+
+```{python}
+import sys
+print("Python executable:", sys.executable)
+print("\nPython path (sys.path):")
+for i, path in enumerate(sys.path[:10]):  # Show first 10 paths
+    print(f"  {i}: {path}")
+if len(sys.path) > 10:
+    print(f"  ... and {len(sys.path) - 10} more paths")
+```
+
+### Environment Variables
+
+```{python}
+import os
+env_vars = ['HOME', 'PWD', 'JUPYTER_PATH', 'PATH']
+print("Relevant environment variables:")
+for var in env_vars:
+    value = os.environ.get(var, 'Not set')
+    if var == 'PATH' and value != 'Not set':
+        # Show only first few PATH entries
+        paths = value.split(':')
+        print(f"  {var}: {paths[0]}")
+        for p in paths[1:3]:
+            print(f"       {p}")
+        if len(paths) > 3:
+            print(f"       ... and {len(paths) - 3} more paths")
+    else:
+        print(f"  {var}: {value}")
+```
+
+### Attempting to Load the Image
+
+```{python}
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Try different paths
+paths_to_try = [
+    'src/assets/img/logo-maze.png',
+    'assets/img/logo-maze.png',
+    './src/assets/img/logo-maze.png'
+]
+
+for path in paths_to_try:
+    try:
+        img = plt.imread(path)
+        print(f"✓ Successfully loaded image from: {path}")
+        print(f"  Image shape: {img.shape}")
+        break
+    except FileNotFoundError:
+        print(f"✗ Could not load from: {path}")
+    except Exception as e:
+        print(f"✗ Error loading {path}: {type(e).__name__}: {e}")
+```
