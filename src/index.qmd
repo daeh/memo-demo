@@ -1,0 +1,28 @@
+---
+title: "memo"
+subtitle: ""
+author: ""
+page-layout: full
+sidebar: false
+toc: false
+format:
+  html:
+    include-in-header:
+      - file: includes/thebe.html
+    css: assets/styles/custom.css
+---
+
+<!-- Thebe status widget mount point (hidden until moved to navbar) -->
+<div class="thebe-status" style="display: none;"></div>
+
+
+
+```{python}
+from memo import memo
+import jax
+import jax.numpy as np
+from enum import IntEnum
+
+print(jax.__version__)
+```
+

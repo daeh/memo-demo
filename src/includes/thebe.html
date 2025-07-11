@@ -1,0 +1,63 @@
+<!-- Font Awesome for ipywidgets icons -->
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"
+  integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg=="
+  crossorigin="anonymous"
+/>
+
+<!-- Thebe CSS -->
+<link rel="stylesheet" href="assets/styles/thebe.css" />
+
+<!-- Custom Navbar CSS -->
+<link rel="stylesheet" href="assets/styles/custom-navbar.css" />
+<!-- Custom Thebe initialization -->
+<script src="assets/js/thebe-config.js"></script>
+
+<!-- Thebe Configuration (MUST be loaded before Thebe library) -->
+<script type="text/x-thebe-config">
+  {
+    "requestKernel": true,
+    "binderOptions": {
+      "repo": "daeh/memo-demo",
+      "ref": "main",
+      "binderUrl": "https://mybinder.org"
+    },
+    "kernelOptions": {
+      "kernelName": "python3"
+    },
+    "selector": "[data-executable=\"true\"]",
+    "mountRunButton": true,
+    "mountRunAllButton": false,
+    "mountRestartButton": false,
+    "mountRestartAllButton": false,
+    "mountActivateWidget": false,
+    "mountStatusWidget": true,
+    "codeMirrorConfig": {
+      "theme": "ttcn",
+      "lineNumbers": true,
+      "autoCloseBrackets": true
+    }
+  }
+</script>
+
+<!-- Custom Navbar JS -->
+<script src="assets/js/custom-navbar.js"></script>
+
+<!-- Load Thebe library -->
+<script src="https://unpkg.com/thebe@latest/lib/index.js"></script>
+
+<!-- Initialize Thebe after library loads -->
+<script>
+  // Wait for Thebe to be fully loaded before initializing
+  function waitForThebe() {
+    if (window.thebe && window.thebe.bootstrap) {
+      const script = document.createElement("script");
+      script.src = "assets/js/thebe-config.js";
+      document.head.appendChild(script);
+    } else {
+      setTimeout(waitForThebe, 100);
+    }
+  }
+  waitForThebe();
+</script>

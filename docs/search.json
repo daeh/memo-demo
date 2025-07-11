@@ -1,0 +1,37 @@
+[
+  {
+    "objectID": "game23.html",
+    "href": "game23.html",
+    "title": "2/3rds Game",
+    "section": "",
+    "text": "from memo import memo\nimport jax\nimport jax.numpy as np\nfrom enum import IntEnum\n\nprint(jax.__version__)\n\n\n\nN = np.arange(100 + 1)\nN.shape\n\n@memo\ndef my_memo[_n: N]():\n    return _n\n\nmy_memo()\n\n\n\n@memo\ndef my_memo[_n: N]():\n    kartik: chooses(n in N, wpp=1)\n    return Pr[kartik.n == _n]\n\nmy_memo()\n\n\n\n@memo\ndef my_memo[_n: N]():\n    kartik: chooses(n in N, wpp=4 if n % 2 == 0 else 1)\n    return Pr[kartik.n == _n]\n\nmy_memo()\n\n\n\n@memo\ndef reader_thinks():\n    reader: thinks[\n        population: chooses(n in N, wpp=1)  ### back to a uniform prior\n    ]\n\n    return reader[ E[population.n] ]  ### query what the reader thinks about the population\n\nreader_thinks()\n\n\n\n@memo\ndef reader_thinks():\n    reader: thinks[\n        population: chooses(n in N, wpp=1)\n    ]\n\n    return reader[ (2/3)*E[population.n] ]\n\nreader_thinks()\n\n\n\nfrom matplotlib import pyplot as plt\n\n@memo\ndef reader_choice_k_soft[_n: N](k):\n    reader: thinks[\n        population: chooses(\n            n in N,\n            wpp=reader_choice_k_soft[n](k-1) if k &gt; 0 else 1\n        )\n    ]\n    reader: chooses(n in N, wpp=exp(-abs((2/3)*E[population.n] - n)))\n    return Pr[reader.n == _n]\n\nplt.plot(N, reader_choice_k_soft(0))\n\n\n\nfig, ax = plt.subplots()\nk_vals = [0, 1, 2, 5, 7]\nfor k_ in k_vals:\n    ax.plot(N, reader_choice_k_soft(k_), alpha=0.8, label=f\"k={k_}\")\nax.set_ylim((0, 0.5))\nax.legend()\n\n\nYour guesses\n\nimport matplotlib.pyplot as plt\nfrom collections import Counter\n\ndata = []\n\ncnt = Counter(data)\n\nxs = list(range(0, 101))\nys = [cnt[x] for x in xs]  # zero where missing\n\nplt.figure(figsize=(12, 4))\nplt.bar(xs, ys, edgecolor='black')\nplt.xticks(range(0, 101, 5))\nplt.xlim(-0.5, 100.5)\nplt.xlabel('Guess')\nplt.ylabel('Count')\nplt.show()"
+  },
+  {
+    "objectID": "rsa.html",
+    "href": "rsa.html",
+    "title": "RSA",
+    "section": "",
+    "text": "from memo import memo\nimport jax\nimport jax.numpy as np\nfrom enum import IntEnum\n\nprint(jax.__version__)\n\nclass U(IntEnum):  # utterance space\n    GREEN  = 0\n    PINK   = 1\n    SQUARE = 2\n    ROUND  = 3\n\nclass R(IntEnum):  # referent space\n    GREEN_SQUARE = 0\n    GREEN_CIRCLE = 1\n    PINK_CIRCLE  = 2\n\n@jax.jit\ndef denotes(u, r):\n    return np.array([\n    #    green square\n    #    |  green circle\n    #    |  |  pink circle\n    #    |  |  |\n        [1, 1, 0],  # \"green\"\n        [0, 0, 1],  # \"pink\"\n        [1, 0, 0],  # \"square\"\n        [0, 1, 1]   # \"round\"\n    ])[u, r]\n\n\n@memo\ndef L[u: U, r: R](beta, t):\n    listener: thinks[\n        speaker: given(r in R, wpp=1),\n        speaker: chooses(u in U, wpp=\n            denotes(u, r) * (1 if t == 0 else exp(beta * L[u, r](beta, t - 1))))\n    ]\n    listener: observes [speaker.u] is u\n    listener: chooses(r in R, wpp=Pr[speaker.r == r])\n    return Pr[listener.r == r]\n\nbeta = 1.\nprint(L(beta, 0))\nprint(L(beta, 1))\n\n\n## Fitting the model to data...\nY = np.array([65, 115, 0]) / 180  # data from Qing & Franke 2015\n@jax.jit\ndef loss(beta):\n    return np.mean((L(beta, 1)[0] - Y) ** 2)\n\nfrom matplotlib import pyplot as plt\nplt.figure(figsize=(5, 4))\n\n## Fitting by gradient descent!\nvg = jax.value_and_grad(loss)\nlosses = []\nbeta = 0.\nfor _ in range(26):\n    l, dbeta = vg(beta)\n    losses.append(l)\n    beta = beta - dbeta * 12.\nplt.plot(np.arange(len(losses)), losses)\nplt.ylabel('MSE (%)')\nplt.xlabel('Step #')\nplt.yticks([0, 0.02], [0, 2])\nplt.title('Gradient descent')\n\nplt.tight_layout()"
+  },
+  {
+    "objectID": "demo.html",
+    "href": "demo.html",
+    "title": "memo",
+    "section": "",
+    "text": "from memo import memo\nimport jax\nimport jax.numpy as np\nfrom enum import IntEnum\n\nprint(jax.__version__)"
+  },
+  {
+    "objectID": "demo.html#interactive-matplotlib-example",
+    "href": "demo.html#interactive-matplotlib-example",
+    "title": "memo",
+    "section": "Interactive Matplotlib Example",
+    "text": "Interactive Matplotlib Example\nHere’s an interactive sine plot using ipywidgets:\n\nimport ipywidgets as widgets\nfrom IPython.display import display\nimport matplotlib.pyplot as plt\nimport numpy as np\n\n# Use inline backend for basic display\n%matplotlib inline\n\nx = np.linspace(0,10)\n\ndef sine_func(x, w, amp):\n    return amp*np.sin(w*x)\n\n# Create interactive widgets\nw_slider = widgets.FloatSlider(value=1, min=0, max=4, step=0.25, description='w:')\namp_slider = widgets.FloatSlider(value=1, min=0, max=4, step=0.1, description='amp:')\noutput = widgets.Output()\n\ndef update_plot(change):\n    with output:\n        output.clear_output(wait=True)\n        plt.figure(figsize=(8, 4))\n        plt.ylim(-4, 4)\n        plt.plot(x, sine_func(x, w_slider.value, amp_slider.value))\n        plt.xlabel('x')\n        plt.ylabel('y')\n        plt.title(f'Sine wave: y = {amp_slider.value:.1f} * sin({w_slider.value:.2f} * x)')\n        plt.grid(True)\n        plt.show()\n\nw_slider.observe(update_plot, names='value')\namp_slider.observe(update_plot, names='value')\n\n# Initial plot\nupdate_plot(None)\n\n# Display widgets\ndisplay(widgets.VBox([w_slider, amp_slider, output]))"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "memo",
+    "section": "",
+    "text": "from memo import memo\nimport jax\nimport jax.numpy as np\nfrom enum import IntEnum\n\nprint(jax.__version__)"
+  }
+]

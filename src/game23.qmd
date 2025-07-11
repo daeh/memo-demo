@@ -1,0 +1,147 @@
+---
+title: "2/3rds Game"
+subtitle: ""
+author: ""
+page-layout: full
+sidebar: false
+toc: false
+format:
+  html:
+    include-in-header:
+      - file: includes/thebe.html
+    css: assets/styles/custom.css
+---
+
+<!-- Thebe status widget mount point (hidden until moved to navbar) -->
+<div class="thebe-status" style="display: none;"></div>
+
+
+
+```{python}
+from memo import memo
+import jax
+import jax.numpy as np
+from enum import IntEnum
+
+print(jax.__version__)
+```
+
+
+<br /><br />
+
+```{python}
+N = np.arange(100 + 1)
+N.shape
+
+@memo
+def my_memo[_n: N]():
+    return _n
+
+my_memo()
+```
+
+
+<br /><br />
+
+```{python}
+@memo
+def my_memo[_n: N]():
+    kartik: chooses(n in N, wpp=1)
+    return Pr[kartik.n == _n]
+
+my_memo()
+```
+
+<br /><br />
+
+```{python}
+@memo
+def my_memo[_n: N]():
+    kartik: chooses(n in N, wpp=4 if n % 2 == 0 else 1)
+    return Pr[kartik.n == _n]
+
+my_memo()
+```
+
+<br /><br />
+
+```{python}
+@memo
+def reader_thinks():
+    reader: thinks[
+        population: chooses(n in N, wpp=1)  ### back to a uniform prior
+    ]
+
+    return reader[ E[population.n] ]  ### query what the reader thinks about the population
+
+reader_thinks()
+```
+
+
+<br /><br />
+
+```{python}
+@memo
+def reader_thinks():
+    reader: thinks[
+        population: chooses(n in N, wpp=1)
+    ]
+
+    return reader[ (2/3)*E[population.n] ]
+
+reader_thinks()
+```
+
+<br /><br />
+
+```{python}
+from matplotlib import pyplot as plt
+
+@memo
+def reader_choice_k_soft[_n: N](k):
+    reader: thinks[
+        population: chooses(
+            n in N,
+            wpp=reader_choice_k_soft[n](k-1) if k > 0 else 1
+        )
+    ]
+    reader: chooses(n in N, wpp=exp(-abs((2/3)*E[population.n] - n)))
+    return Pr[reader.n == _n]
+
+plt.plot(N, reader_choice_k_soft(0))
+```
+
+<br /><br />
+
+```{python}
+fig, ax = plt.subplots()
+k_vals = [0, 1, 2, 5, 7]
+for k_ in k_vals:
+    ax.plot(N, reader_choice_k_soft(k_), alpha=0.8, label=f"k={k_}")
+ax.set_ylim((0, 0.5))
+ax.legend()
+```
+
+
+
+### Your guesses
+
+```{python}
+import matplotlib.pyplot as plt
+from collections import Counter
+
+data = []
+
+cnt = Counter(data)
+
+xs = list(range(0, 101))
+ys = [cnt[x] for x in xs]  # zero where missing
+
+plt.figure(figsize=(12, 4))
+plt.bar(xs, ys, edgecolor='black')
+plt.xticks(range(0, 101, 5))
+plt.xlim(-0.5, 100.5)
+plt.xlabel('Guess')
+plt.ylabel('Count')
+plt.show()
+```

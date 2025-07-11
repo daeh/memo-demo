@@ -1,0 +1,4 @@
+.navbar { display: none !important; }
+.page-columns { max-width: none !important; width: 100% !important; margin: 0 !important; }
+.quarto-container { max-width: none !important; padding: 0 !important; }
+body { margin: 0; padding: 20px; }
