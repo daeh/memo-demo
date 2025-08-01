@@ -63,6 +63,18 @@
       // Load CodeMirror theme CSS
       await utils.loadCSS("https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/neo.min.css");
       
+      // Load CodeMirror comment addon for toggle comment functionality
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/comment/comment.min.js';
+      document.head.appendChild(script);
+      await new Promise((resolve) => {
+        script.onload = resolve;
+        script.onerror = () => {
+          console.warn('Failed to load CodeMirror comment addon, comment toggling may not work');
+          resolve();
+        };
+      });
+      
       // Set up observer to manage UI elements
       setupMutationObserver();
       
@@ -652,6 +664,58 @@
         thebeActions.restartKernel();
       }
     });
+    
+    // Set up CodeMirror comment toggling
+    setupCodeMirrorCommentToggle();
+  }
+  
+  function setupCodeMirrorCommentToggle() {
+    // Wait a bit for CodeMirror instances to be created
+    setTimeout(() => {
+      configureAllCodeMirrorInstances();
+    }, 1000);
+    
+    // Also set up observer for future CodeMirror instances
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            // Check if this is or contains a CodeMirror element
+            if (node.classList?.contains('CodeMirror')) {
+              configureCodeMirrorInstance(node);
+            } else if (node.querySelectorAll) {
+              node.querySelectorAll('.CodeMirror').forEach(configureCodeMirrorInstance);
+            }
+          }
+        });
+      });
+    });
+    
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  }
+  
+  function configureAllCodeMirrorInstances() {
+    document.querySelectorAll('.CodeMirror').forEach(configureCodeMirrorInstance);
+  }
+  
+  function configureCodeMirrorInstance(element) {
+    if (element.CodeMirror && !element.dataset.commentToggleConfigured) {
+      const cm = element.CodeMirror;
+      
+      // CodeMirror 5 uses extraKeys for custom key bindings
+      // toggleComment is a built-in command in CodeMirror 5
+      cm.setOption('extraKeys', {
+        ...cm.getOption('extraKeys'),
+        'Cmd-/': 'toggleComment',
+        'Ctrl-/': 'toggleComment'
+      });
+      
+      element.dataset.commentToggleConfigured = 'true';
+      console.log('✅ Configured comment toggle (Cmd-/ or Ctrl-/) for CodeMirror instance');
+    }
   }
 
   // ---------- STATUS HELPERS (Using Official API) ----------
