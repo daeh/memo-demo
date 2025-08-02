@@ -137,7 +137,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       "autoCloseBrackets": true,
       "indentUnit": 4,
       "indentWithTabs": false,
-      "smartIndent": true
+      "smartIndent": true,
+      "extraKeys": {
+        "Cmd-/": "toggleComment",
+        "Ctrl-/": "toggleComment"
+      }
     }
   }
 </script>
@@ -201,7 +205,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1>Anatomy of a <code>memo</code> model</h1>
 <section id="memo-models-are-decorated-functions" class="level2">
 <h2 class="anchored" data-anchor-id="memo-models-are-decorated-functions"><code>memo</code> models are decorated functions</h2>
-<div id="3237b56d" class="cell">
+<div id="60012789" class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> memo <span class="im">import</span> memo</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>]</span>
@@ -232,7 +236,7 @@ my_model(1, b=2, c=3)
 
  -->
 <p>You can convert the output array into an <code>pandas</code> DataFrame or an <code>xarray</code> for easy indexing:</p>
-<div id="3d5fe2a1" class="cell">
+<div id="12151a4d" class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>res <span class="op">=</span> my_model(<span class="dv">1</span>, b<span class="op">=</span><span class="dv">2</span>, c<span class="op">=</span><span class="dv">3</span>, </span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                        return_aux<span class="op">=</span><span class="va">True</span>, </span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                        return_pandas<span class="op">=</span><span class="va">True</span>, </span>
@@ -246,7 +250,7 @@ my_model(1, b=2, c=3)
 </div>
 <section id="chooses" class="level3">
 <h3 class="anchored" data-anchor-id="chooses"><code>chooses()</code></h3>
-<div id="398d547c" class="cell">
+<div id="b743d367" class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax.numpy <span class="im">as</span> np</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>Z <span class="op">=</span> np.arange(<span class="dv">100</span>) <span class="op">+</span> <span class="dv">1</span></span>
@@ -261,7 +265,7 @@ my_model(1, b=2, c=3)
 </section>
 <section id="expressions" class="level3">
 <h3 class="anchored" data-anchor-id="expressions"><code>expressions</code></h3>
-<div id="77a3ff22" class="cell">
+<div id="f5987529" class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax.numpy <span class="im">as</span> np</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>Z <span class="op">=</span> np.arange(<span class="dv">100</span>) <span class="op">+</span> <span class="dv">1</span></span>
@@ -274,7 +278,7 @@ my_model(1, b=2, c=3)
 <span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>my_model()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><br></p>
-<div id="a3274288" class="cell">
+<div id="868142cf" class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="at">@memo</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> my_model[z: Z]():</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    kartik: chooses(z <span class="kw">in</span> Z, wpp<span class="op">=</span><span class="dv">3</span> <span class="cf">if</span> z <span class="op">%</span> <span class="dv">2</span> <span class="op">==</span> <span class="dv">0</span> <span class="cf">else</span> <span class="dv">1</span>)</span>
@@ -283,7 +287,7 @@ my_model(1, b=2, c=3)
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>my_model()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><br></p>
-<div id="cc43435c" class="cell">
+<div id="1543ad73" class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib <span class="im">import</span> pyplot <span class="im">as</span> plt</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> jax.scipy.stats.norm <span class="im">import</span> pdf <span class="im">as</span> normpdf</span>
@@ -300,7 +304,7 @@ my_model(1, b=2, c=3)
 </section>
 <section id="thinks" class="level3">
 <h3 class="anchored" data-anchor-id="thinks"><code>thinks[]</code></h3>
-<div id="594acb22" class="cell">
+<div id="14f6b6c4" class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="at">@memo</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> my_model[z: Z]():</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    kartik: thinks[</span>
@@ -316,7 +320,7 @@ my_model(1, b=2, c=3)
 </section>
 <section id="the-23rds-game" class="level1">
 <h1>The 2/3rds game</h1>
-<div id="ec394e68" class="cell">
+<div id="69656e9f" class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax.numpy <span class="im">as</span> np</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> np.arange(<span class="dv">100</span>) <span class="op">+</span> <span class="dv">1</span></span>
@@ -332,7 +336,7 @@ my_model(1, b=2, c=3)
 <span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>reader_thinks()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><br><br></p>
-<div id="0e585d88" class="cell">
+<div id="5c59caa2" class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="at">@memo</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> reader_thinks():</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    reader: thinks[</span>
@@ -344,7 +348,7 @@ my_model(1, b=2, c=3)
 <span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>reader_thinks()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><br><br></p>
-<div id="5bda8f36" class="cell">
+<div id="8c0bd9d0" class="cell">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib <span class="im">import</span> pyplot <span class="im">as</span> plt</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="at">@memo</span></span>
@@ -361,7 +365,7 @@ my_model(1, b=2, c=3)
 <span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>plt.plot(N, reader_chooses(<span class="dv">0</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><br><br></p>
-<div id="25174f1f" class="cell">
+<div id="409db50a" class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots()</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>k_vals <span class="op">=</span> [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">5</span>, <span class="dv">7</span>]</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> k_ <span class="kw">in</span> k_vals:</span>

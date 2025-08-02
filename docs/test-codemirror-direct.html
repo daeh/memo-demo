@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="">
+<meta name="author" content="Memo Team">
 
-<title>Question-asking based on Expected Information Gain (EIG) – Memo Demo</title>
+<title>CodeMirror Direct Test (No Thebe) – Memo Demo</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -103,65 +103,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 <style>html{ scroll-behavior: smooth; }</style>
-<!-- Font Awesome for ipywidgets icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg==" crossorigin="anonymous">
-
-<!-- Thebe CSS -->
-<link rel="stylesheet" href="assets/styles/thebe.css">
-
-<!-- Custom Navbar CSS -->
-<link rel="stylesheet" href="assets/styles/custom-navbar.css">
-
-<!-- Thebe Configuration (MUST be loaded before Thebe library) -->
-<script type="text/x-thebe-config">
-  {
-    "requestKernel": true,
-    "binderOptions": {
-      "repo": "daeh/memo-demo",
-      "ref": "main",
-      "binderUrl": "https://mybinder.org"
-    },
-    "kernelOptions": {
-      "kernelName": "python3"
-    },
-    "selector": "[data-executable=\"true\"]",
-    "mountRunButton": true,
-    "mountRunAllButton": false,
-    "mountRestartButton": false,
-    "mountRestartAllButton": false,
-    "mountActivateWidget": false,
-    "mountStatusWidget": true,
-    "codeMirrorConfig": {
-      "theme": "default",
-      "lineNumbers": true,
-      "autoCloseBrackets": true,
-      "indentUnit": 4,
-      "indentWithTabs": false,
-      "smartIndent": true,
-      "extraKeys": {
-        "Cmd-/": "toggleComment",
-        "Ctrl-/": "toggleComment"
-      }
-    }
-  }
-</script>
-
-<!-- Load Thebe library (specific version for stability) -->
-<script src="https://unpkg.com/thebe@0.9.2/lib/index.js"></script>
-
-<!-- Custom Thebe initialization (loaded AFTER Thebe library) -->
-<script src="assets/js/thebe-config.js"></script>
-
-<!-- Custom Navbar JS -->
-<script src="assets/js/custom-navbar.js"></script>
 
 
 <link rel="stylesheet" href="assets/styles/styles.css">
-<link rel="stylesheet" href="assets/styles/custom.css">
-<meta property="og:title" content="Question-asking based on Expected Information Gain (EIG) – Memo Demo">
+<meta property="og:title" content="CodeMirror Direct Test (No Thebe) – Memo Demo">
 <meta property="og:description" content="">
 <meta property="og:site_name" content="Memo Demo">
-<meta name="twitter:title" content="Question-asking based on Expected Information Gain (EIG) – Memo Demo">
+<meta name="twitter:title" content="CodeMirror Direct Test (No Thebe) – Memo Demo">
 <meta name="twitter:description" content="">
 <meta name="twitter:card" content="summary">
 </head>
@@ -179,13 +127,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Question-asking based on Expected Information Gain (EIG)</h1>
+<h1 class="title">CodeMirror Direct Test (No Thebe)</h1>
 </div>
 
 
 
 <div class="quarto-title-meta column-page">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Memo Team </p>
+          </div>
+  </div>
     
   
     
@@ -196,81 +150,247 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<!-- Thebe status widget mount point (hidden until moved to navbar) -->
-<div class="thebe-status" style="display: none;">
+<section id="testing-cmd--without-thebe" class="level2">
+<h2 class="anchored" data-anchor-id="testing-cmd--without-thebe">Testing cmd-/ without Thebe</h2>
+<p>This page initializes CodeMirror directly without relying on Thebe, allowing us to test the comment toggle functionality.</p>
+<!-- CodeMirror CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/neo.min.css">
 
-</div>
-<p><br><br></p>
-<p><strong>Inspired by:</strong> Rothe, A., Lake, B. M., &amp; Gureckis, T. M. (2018). <em>Do people ask good questions?.</em> Computational Brain &amp; Behavior, 1, 69-89.</p>
-<p>Bob rolls a red die and a blue die. Alice gets to ask one yes-no question about the sum. What is the most informative question she could ask, in order to learn the most about the two die rolls? For example, is it better to ask if the sum is a perfect square, or if the sum is prime?</p>
-<p>We’ll compute the EIG of various questions…</p>
-<div id="69e3ccf6" class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> memo <span class="im">import</span> memo</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax.numpy <span class="im">as</span> np</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>is_prime  <span class="op">=</span> np.array([<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>])</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>is_square <span class="op">=</span> np.array([<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>])</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>is_pow_2  <span class="op">=</span> np.array([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>])</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>Qs <span class="op">=</span> [</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">lambda</span> n: n <span class="op">==</span> <span class="dv">7</span>,</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">lambda</span> n: n <span class="op">==</span> <span class="dv">12</span>,</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">lambda</span> n: n <span class="op">&gt;</span> <span class="dv">10</span>,</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">lambda</span> n: n <span class="op">&gt;</span> <span class="dv">8</span>,</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">lambda</span> n: n <span class="op">&gt;</span> <span class="dv">6</span>,</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">lambda</span> n: n <span class="op">&gt;</span> <span class="dv">5</span>,</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">lambda</span> n: n <span class="op">%</span> <span class="dv">2</span> <span class="op">==</span> <span class="dv">0</span>,  <span class="co"># even??</span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">lambda</span> n: n <span class="op">%</span> <span class="dv">2</span> <span class="op">==</span> <span class="dv">1</span>,  <span class="co"># odd??</span></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">lambda</span> n: n <span class="op">%</span> <span class="dv">3</span> <span class="op">==</span> <span class="dv">0</span>,</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">lambda</span> n: n <span class="op">%</span> <span class="dv">4</span> <span class="op">==</span> <span class="dv">0</span>,</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">lambda</span> n: n <span class="op">%</span> <span class="dv">5</span> <span class="op">==</span> <span class="dv">0</span>,</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="kw">lambda</span> n: is_prime[n],</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    <span class="kw">lambda</span> n: is_square[n],</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">lambda</span> n: is_pow_2[n],</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>]</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> np.arange(<span class="dv">1</span>, <span class="dv">6</span> <span class="op">+</span> <span class="dv">1</span>)  <span class="co"># single die's outcomes</span></span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>Q <span class="op">=</span> np.arange(<span class="bu">len</span>(Qs))   <span class="co"># questions</span></span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>A <span class="op">=</span> np.array([<span class="dv">0</span>, <span class="dv">1</span>])     <span class="co"># answers (yes/no)</span></span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="at">@jax.jit</span></span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> respond(q, a, n):</span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.array([q_(n) <span class="cf">for</span> q_ <span class="kw">in</span> Qs])[q] <span class="op">==</span> a</span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="at">@memo</span></span>
-<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> eig[q: Q]():</span>
-<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>    alice: knows(q)</span>
-<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>    alice: thinks[</span>
-<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>        <span class="co"># bob rolls dice...</span></span>
-<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>        bob: chooses(n_red <span class="kw">in</span> N, wpp<span class="op">=</span><span class="dv">1</span>),</span>
-<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>        bob: chooses(n_blu <span class="kw">in</span> N, wpp<span class="op">=</span><span class="dv">1</span>),</span>
-<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>        <span class="co"># bob answers question...</span></span>
-<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>        bob: knows(q),</span>
-<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>        bob: chooses(a <span class="kw">in</span> A, wpp<span class="op">=</span>respond(q, a, n_red <span class="op">+</span> n_blu))</span>
-<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>    ]</span>
-<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>    alice: snapshots_self_as(future_self)</span>
-<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> alice[ imagine[</span>
-<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>        <span class="co"># if I were to get the answer...</span></span>
-<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>        future_self: observes [bob.a] <span class="kw">is</span> bob.a,</span>
-<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>        <span class="co"># EIG = entropy minus conditional entropy</span></span>
-<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>        H[bob.n_red, bob.n_blu] <span class="op">-</span> E[future_self[ H[bob.n_red, bob.n_blu] ]]</span>
-<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>    ] ]</span>
-<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>z <span class="op">=</span> eig()</span>
-<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>timeit <span class="op">-</span>r <span class="dv">10</span> <span class="op">-</span>n <span class="dv">100</span> eig().block_until_ready()</span>
-<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a><span class="co">## print questions and EIGs in sorted order</span></span>
-<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">'EIG     Question'</span>)</span>
-<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">'---     ---'</span>)</span>
-<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> inspect</span>
-<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a>q_names <span class="op">=</span> [inspect.getsource(q_).strip()[<span class="dv">10</span>:<span class="op">-</span><span class="dv">1</span>] <span class="cf">for</span> q_ <span class="kw">in</span> Qs]</span>
-<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> eig_, q_ <span class="kw">in</span> <span class="bu">reversed</span>(<span class="bu">sorted</span>(<span class="bu">list</span>(<span class="bu">zip</span>(z, q_names)))):</span>
-<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f'</span><span class="sc">{</span>eig_<span class="sc">:0.5f}</span><span class="ss">'</span>, q_)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<!-- CodeMirror JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/comment/comment.min.js"></script>
+
+<style>
+.editor-wrapper {
+    margin: 20px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.editor-title {
+    background: #f0f0f0;
+    padding: 8px 15px;
+    font-weight: bold;
+    font-size: 14px;
+    border-bottom: 1px solid #ddd;
+}
+.CodeMirror {
+    height: auto;
+    min-height: 100px;
+}
+.test-status {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f0f8ff;
+    border: 1px solid #4a90e2;
+    border-radius: 4px;
+}
+.test-result {
+    margin: 10px 0;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    font-family: monospace;
+}
+</style>
+
+<div class="test-status">
+    <h3 class="anchored">Automated Test Results</h3>
+    <div id="auto-test-results">
+        <p>⏳ Initializing CodeMirror and running tests...</p>
+    </div>
 </div>
 
+<div class="editor-wrapper">
+    <div class="editor-title">Test Editor 1: Basic Python Code</div>
+    <textarea id="editor1"># This is a test comment
+print("Hello, World!")
+x = 5
+y = 10
+result = x + y
+print(f"The sum is: {result}")</textarea>
+</div>
 
+<div class="editor-wrapper">
+    <div class="editor-title">Test Editor 2: Function Example</div>
+    <textarea id="editor2">def calculate_average(numbers):
+    # Check if list is empty
+    if not numbers:
+        return 0
+    
+    total = sum(numbers)
+    count = len(numbers)
+    return total / count
+
+# Test the function
+test_data = [10, 20, 30, 40, 50]
+avg = calculate_average(test_data)
+print(f"Average: {avg}")</textarea>
+</div>
+
+<div class="test-result" id="manual-test-log">
+    <strong>Manual Test Log:</strong> Press Cmd-/ or Ctrl-/ in the editors above
+</div>
+
+<script>
+// Initialize CodeMirror instances
+let testResults = {
+    initialization: false,
+    extraKeysConfigured: false,
+    commandAvailable: false,
+    toggleFunctional: false
+};
+
+function initializeCodeMirror() {
+    try {
+        const editors = [];
+        
+        // Initialize editors
+        ['editor1', 'editor2'].forEach((id, index) => {
+            const textarea = document.getElementById(id);
+            if (!textarea) {
+                console.error(`Textarea ${id} not found`);
+                return;
+            }
+            
+            const editor = CodeMirror.fromTextArea(textarea, {
+                mode: 'python',
+                theme: 'neo',
+                lineNumbers: true,
+                indentUnit: 4,
+                extraKeys: {
+                    'Cmd-/': 'toggleComment',
+                    'Ctrl-/': 'toggleComment'
+                }
+            });
+            
+            editors.push(editor);
+            
+            // Track when comment is toggled
+            editor.on('keyHandled', (cm, name, event) => {
+                if (name === 'Cmd-/' || name === 'Ctrl-/') {
+                    const logDiv = document.getElementById('manual-test-log');
+                    logDiv.innerHTML = `<strong>✅ Success!</strong> Comment toggled in Editor ${index + 1} at ${new Date().toLocaleTimeString()}`;
+                    testResults.toggleFunctional = true;
+                    updateTestResults();
+                }
+            });
+        });
+        
+        testResults.initialization = editors.length > 0;
+        
+        // Run automated tests
+        if (editors.length > 0) {
+            runAutomatedTests(editors[0]);
+        }
+        
+    } catch (error) {
+        console.error('Error initializing CodeMirror:', error);
+        document.getElementById('auto-test-results').innerHTML = 
+            `<p style="color: red;">❌ Error: ${error.message}</p>`;
+    }
+}
+
+function runAutomatedTests(editor) {
+    console.log('Running automated tests...');
+    
+    // Test 1: Check if comment command is available
+    testResults.commandAvailable = typeof CodeMirror.commands.toggleComment === 'function';
+    
+    // Test 2: Check if extraKeys are configured
+    const extraKeys = editor.getOption('extraKeys');
+    testResults.extraKeysConfigured = extraKeys && 
+        extraKeys['Cmd-/'] === 'toggleComment' && 
+        extraKeys['Ctrl-/'] === 'toggleComment';
+    
+    // Test 3: Try to programmatically toggle comment
+    try {
+        const cursor = editor.getCursor();
+        const lineBefore = editor.getLine(cursor.line);
+        
+        // Execute toggle comment
+        CodeMirror.commands.toggleComment(editor);
+        const lineAfter = editor.getLine(cursor.line);
+        
+        // Check if line changed (comment was toggled)
+        if (lineBefore !== lineAfter) {
+            testResults.toggleFunctional = true;
+            // Toggle back
+            CodeMirror.commands.toggleComment(editor);
+        }
+    } catch (error) {
+        console.error('Error testing toggle:', error);
+    }
+    
+    updateTestResults();
+}
+
+function updateTestResults() {
+    const resultsDiv = document.getElementById('auto-test-results');
+    
+    const allPassed = Object.values(testResults).every(v => v === true);
+    
+    let html = '<table style="width: 100%; font-family: monospace;">';
+    html += '<tr><th style="text-align: left;">Test</th><th style="text-align: left;">Result</th></tr>';
+    html += `<tr><td>CodeMirror Initialized</td><td>${testResults.initialization ? '✅ Pass' : '❌ Fail'}</td></tr>`;
+    html += `<tr><td>Comment Command Available</td><td>${testResults.commandAvailable ? '✅ Pass' : '❌ Fail'}</td></tr>`;
+    html += `<tr><td>ExtraKeys Configured</td><td>${testResults.extraKeysConfigured ? '✅ Pass' : '❌ Fail'}</td></tr>`;
+    html += `<tr><td>Toggle Functional</td><td>${testResults.toggleFunctional ? '✅ Pass' : '❌ Fail'}</td></tr>`;
+    html += '</table>';
+    
+    if (allPassed) {
+        html += '<p style="color: green; font-weight: bold; margin-top: 10px;">✅ All tests passed! cmd-/ is working correctly.</p>';
+    } else {
+        html += '<p style="color: orange; font-weight: bold; margin-top: 10px;">⚠️ Some tests failed. Check the results above.</p>';
+    }
+    
+    resultsDiv.innerHTML = html;
+    
+    // Log to console for debugging
+    console.log('Test Results:', testResults);
+    
+    // Create global function for manual testing
+    window.verifyCommentToggle = function() {
+        console.log('Comment Toggle Test Results:', testResults);
+        return testResults;
+    };
+}
+
+// Wait for DOM to be ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeCodeMirror);
+} else {
+    // DOM is already ready
+    setTimeout(initializeCodeMirror, 100);
+}
+</script>
+</section>
+<section id="manual-testing-instructions" class="level2">
+<h2 class="anchored" data-anchor-id="manual-testing-instructions">Manual Testing Instructions</h2>
+<ol type="1">
+<li>The editors above are initialized with CodeMirror directly (no Thebe required)</li>
+<li>Click in either editor</li>
+<li>Press <strong>Cmd-/</strong> (Mac) or <strong>Ctrl-/</strong> (Windows/Linux)</li>
+<li>The current line should toggle between commented/uncommented</li>
+<li>The test log will update when you successfully use the shortcut</li>
+</ol>
+</section>
+<section id="console-commands" class="level2">
+<h2 class="anchored" data-anchor-id="console-commands">Console Commands</h2>
+<p>Open the browser console and run:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode javascript code-with-copy"><code class="sourceCode javascript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Check test results</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">window</span><span class="op">.</span><span class="fu">verifyCommentToggle</span>()</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Check first editor configuration</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="bu">document</span><span class="op">.</span><span class="fu">querySelector</span>(<span class="st">'.CodeMirror'</span>)<span class="op">.</span><span class="at">CodeMirror</span><span class="op">.</span><span class="fu">getOption</span>(<span class="st">'extraKeys'</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">// Manually trigger comment toggle</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>CodeMirror<span class="op">.</span><span class="at">commands</span><span class="op">.</span><span class="fu">toggleComment</span>(<span class="bu">document</span><span class="op">.</span><span class="fu">querySelector</span>(<span class="st">'.CodeMirror'</span>)<span class="op">.</span><span class="at">CodeMirror</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

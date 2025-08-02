@@ -1,0 +1,89 @@
+---
+title: "Minimal CodeMirror with cmd-/"
+page-layout: full
+sidebar: false
+toc: false
+---
+
+## Simplest Working CodeMirror
+
+This is the most basic qmd file with a CodeMirror editor where cmd-/ works for comments.
+
+```{=html}
+<!-- CodeMirror CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+
+<!-- CodeMirror JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/comment/comment.min.js"></script>
+
+<style>
+.CodeMirror {
+    border: 1px solid #ddd;
+    height: auto;
+    min-height: 100px;
+}
+</style>
+
+<div style="margin: 20px 0;">
+    <p><strong>Instructions:</strong> Click in the editor below and press <strong>Cmd-/</strong> (Mac) or <strong>Ctrl-/</strong> (Windows/Linux) to toggle comments.</p>
+</div>
+
+<textarea id="myeditor"># Test comment toggle
+print("Hello, World!")
+x = 5
+y = 10
+result = x + y
+print(f"The sum is: {result}")</textarea>
+
+<div id="status" style="margin-top: 20px; padding: 10px; background: #f0f0f0; border-radius: 4px;">
+    <strong>Status:</strong> <span id="status-text">Initializing...</span>
+</div>
+
+<script>
+// Wait for page to load
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize CodeMirror
+    const editor = CodeMirror.fromTextArea(document.getElementById('myeditor'), {
+        mode: 'python',
+        theme: 'default',
+        lineNumbers: true,
+        indentUnit: 4,
+        extraKeys: {
+            'Cmd-/': 'toggleComment',
+            'Ctrl-/': 'toggleComment'
+        }
+    });
+    
+    // Update status
+    document.getElementById('status-text').textContent = 'Ready! cmd-/ is configured.';
+    
+    // Log key events for debugging
+    editor.on('keyHandled', function(cm, name, event) {
+        if (name === 'Cmd-/' || name === 'Ctrl-/') {
+            document.getElementById('status-text').textContent = 
+                'Comment toggled at ' + new Date().toLocaleTimeString();
+        }
+    });
+    
+    // Console test function
+    window.testMinimal = function() {
+        const keys = editor.getOption('extraKeys');
+        console.log('ExtraKeys:', keys);
+        console.log('cmd-/ configured:', keys['Cmd-/'] === 'toggleComment');
+        console.log('Comment command available:', typeof CodeMirror.commands.toggleComment === 'function');
+        return keys['Cmd-/'] === 'toggleComment' && keys['Ctrl-/'] === 'toggleComment';
+    };
+    
+    console.log('✅ Minimal CodeMirror initialized. Run window.testMinimal() to verify.');
+});
+</script>
+```
+
+## Console Test
+
+Open the browser console and run:
+```javascript
+window.testMinimal()
+```

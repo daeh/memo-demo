@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Translation Verification</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        iframe { width: 100%; height: 600px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>CodeMirror Translation Verification</h1>
+    
+    <h2>Step 1: Theme Change Verification</h2>
+    
+    <div id="results"></div>
+    
+    <h2>Translation Page:</h2>
+    <iframe src="test-codemirror-static-html-translate.html" onload="checkIframe()"></iframe>
+    
+    <script>
+    function checkIframe() {
+        const iframe = document.querySelector('iframe');
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        
+        setTimeout(() => {
+            const results = document.getElementById('results');
+            let html = '';
+            
+            // Check if CodeMirror is loaded
+            const cm = iframeDoc.querySelector('.CodeMirror');
+            if (cm && cm.CodeMirror) {
+                html += '<div class="status success">✅ CodeMirror loaded successfully</div>';
+                
+                // Check theme
+                const theme = cm.CodeMirror.getOption('theme');
+                if (theme === 'default') {
+                    html += '<div class="status success">✅ Theme is "default" (matches qmd files)</div>';
+                } else {
+                    html += '<div class="status error">❌ Theme is "' + theme + '" (should be "default")</div>';
+                }
+                
+                // Check extraKeys
+                const extraKeys = cm.CodeMirror.getOption('extraKeys');
+                if (extraKeys && extraKeys['Cmd-/'] === 'toggleComment') {
+                    html += '<div class="status success">✅ cmd-/ is configured for toggleComment</div>';
+                } else {
+                    html += '<div class="status error">❌ cmd-/ is not properly configured</div>';
+                }
+                
+                // Check if comment addon is available
+                if (iframe.contentWindow.CodeMirror && iframe.contentWindow.CodeMirror.commands.toggleComment) {
+                    html += '<div class="status success">✅ Comment addon is loaded</div>';
+                } else {
+                    html += '<div class="status error">❌ Comment addon not found</div>';
+                }
+            } else {
+                html += '<div class="status error">❌ CodeMirror not found</div>';
+            }
+            
+            results.innerHTML = html;
+        }, 1000);
+    }
+    
+    // Also log for console testing
+    window.testTranslation = function() {
+        const iframe = document.querySelector('iframe');
+        const cm = iframe.contentDocument.querySelector('.CodeMirror')?.CodeMirror;
+        if (cm) {
+            console.log('Theme:', cm.getOption('theme'));
+            console.log('ExtraKeys:', cm.getOption('extraKeys'));
+            return true;
+        }
+        return false;
+    };
+    </script>
+</body>
+</html>

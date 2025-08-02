@@ -1,0 +1,23 @@
+---
+title: "test"
+subtitle: ""
+author: ""
+page-layout: full
+sidebar: false
+toc: false
+include-after-body: includes/thebe.html
+---
+
+
+```{=html}
+        <div class="editor-wrapper">
+            <div class="editor-title">Example 1: Basic Python Code</div>
+            <textarea id="editor1" data-executable="true">
+# This is a test comment
+print("Hello, World!")
+x = 5
+y = 10
+result = x + y
+print(f"The sum is: {result}")</textarea>
+        </div>
+```

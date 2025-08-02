@@ -1,0 +1,150 @@
+---
+title: "Minimal Thebe Without Kernel"
+subtitle: "Using Thebe just for CodeMirror UI, not for execution"
+page-layout: full
+sidebar: false
+toc: false
+---
+
+## Thebe for UI Only
+
+What if we configure Thebe to NOT request a kernel? This might let it initialize CodeMirror without trying to connect to Binder.
+
+```{=html}
+<!-- Custom Thebe configuration that doesn't request a kernel -->
+<script type="text/x-thebe-config">
+  {
+    "requestKernel": false,
+    "binderOptions": {
+      "repo": "daeh/memo-demo",
+      "ref": "main",
+      "binderUrl": "https://mybinder.org"
+    },
+    "kernelOptions": {
+      "kernelName": "python3"
+    },
+    "selector": "[data-executable=\"true\"]",
+    "mountRunButton": false,
+    "mountRestartButton": false,
+    "codeMirrorConfig": {
+      "theme": "default",
+      "lineNumbers": true,
+      "indentUnit": 4,
+      "extraKeys": {
+        "Cmd-/": "toggleComment",
+        "Ctrl-/": "toggleComment"
+      }
+    }
+  }
+</script>
+
+<!-- Load Thebe -->
+<script src="https://unpkg.com/thebe@0.9.2/lib/index.js"></script>
+
+<!-- Load CodeMirror comment addon just in case -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/comment/comment.min.js"></script>
+
+<style>
+.status { 
+    padding: 10px; 
+    margin: 10px 0; 
+    background: #f0f0f0; 
+    border-radius: 4px;
+}
+</style>
+
+<div class="status">
+    <strong>Status:</strong> <span id="status">Initializing...</span>
+</div>
+
+<div style="margin: 20px 0;">
+    <p><strong>Test:</strong> If this works, cmd-/ should toggle comments even on localhost</p>
+    <textarea data-executable="true"># Test no-kernel Thebe
+print("Hello World")
+# Press cmd-/ to toggle comments
+x = 42</textarea>
+</div>
+
+<button onclick="bootstrapThebe()">Bootstrap Thebe (No Kernel)</button>
+<button onclick="checkStatus()">Check Status</button>
+
+<script>
+async function bootstrapThebe() {
+    try {
+        document.getElementById('status').textContent = 'Bootstrapping Thebe...';
+        
+        if (!window.thebe) {
+            document.getElementById('status').textContent = 'Error: Thebe not loaded';
+            return;
+        }
+        
+        // Get config
+        const configScript = document.querySelector('script[type="text/x-thebe-config"]');
+        const config = JSON.parse(configScript.textContent);
+        
+        console.log('Bootstrapping with config:', config);
+        
+        // Bootstrap Thebe
+        const thebe = await window.thebe.bootstrap(config);
+        
+        document.getElementById('status').textContent = 'Thebe bootstrapped!';
+        console.log('Thebe instance:', thebe);
+        
+        // Check for CodeMirror
+        setTimeout(() => {
+            const cm = document.querySelector('.CodeMirror');
+            if (cm && cm.CodeMirror) {
+                const extraKeys = cm.CodeMirror.getOption('extraKeys');
+                console.log('CodeMirror extraKeys:', extraKeys);
+                document.getElementById('status').textContent = 
+                    'Success! CodeMirror created. cmd-/ should work.';
+            } else {
+                document.getElementById('status').textContent = 
+                    'No CodeMirror instance found';
+            }
+        }, 1000);
+        
+    } catch (error) {
+        console.error('Bootstrap error:', error);
+        document.getElementById('status').textContent = 
+            'Error: ' + error.message;
+    }
+}
+
+function checkStatus() {
+    const status = {
+        thebe: !!window.thebe,
+        thebeInstance: !!window.thebeInstance,
+        codeMirror: document.querySelectorAll('.CodeMirror').length,
+        commentAddon: typeof CodeMirror?.commands?.toggleComment === 'function'
+    };
+    
+    console.table(status);
+    
+    if (status.codeMirror > 0) {
+        const cm = document.querySelector('.CodeMirror').CodeMirror;
+        const extraKeys = cm.getOption('extraKeys');
+        console.log('ExtraKeys:', extraKeys);
+        
+        const working = extraKeys?.['Cmd-/'] === 'toggleComment';
+        document.getElementById('status').textContent = 
+            working ? '✅ cmd-/ is configured!' : '❌ cmd-/ not configured';
+    }
+}
+
+// Don't auto-bootstrap - let user control it
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('status').textContent = 
+        'Ready. Click "Bootstrap Thebe" to initialize.';
+});
+</script>
+```
+
+## Theory
+
+By setting `"requestKernel": false`, Thebe might:
+1. Skip the Binder connection that causes CORS errors
+2. Still create CodeMirror instances with our configuration
+3. Allow cmd-/ to work even on localhost
+
+Let's test it!

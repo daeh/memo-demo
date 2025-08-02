@@ -1,0 +1,265 @@
+---
+title: "CodeMirror Hybrid Test"
+subtitle: "Testing cmd-/ with fallback to direct initialization"
+page-layout: full
+sidebar: false
+toc: false
+include-after-body: includes/thebe.html
+---
+
+## Hybrid CodeMirror Test
+
+This page attempts to use Thebe but falls back to direct CodeMirror initialization if Thebe fails (e.g., on localhost).
+
+```{=html}
+<!-- Additional CodeMirror resources as fallback -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/neo.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/comment/comment.min.js"></script>
+
+<style>
+.test-status {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f0f8ff;
+    border: 1px solid #4a90e2;
+    border-radius: 4px;
+}
+.editor-wrapper {
+    margin: 20px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.editor-title {
+    background: #f0f0f0;
+    padding: 8px 15px;
+    font-weight: bold;
+    font-size: 14px;
+    border-bottom: 1px solid #ddd;
+}
+</style>
+
+<div class="test-status" id="test-status">
+    <h3>Status</h3>
+    <div id="status-content">
+        <p>⏳ Initializing...</p>
+    </div>
+</div>
+
+<div class="editor-wrapper">
+    <div class="editor-title">Test Editor</div>
+    <textarea id="test-editor" data-executable="true"># Test comment toggle with cmd-/
+print("Hello, World!")
+x = 5
+y = 10
+result = x + y
+print(f"The sum is: {result}")
+
+def test_function():
+    # This is a comment
+    return "Testing cmd-/"
+    
+# Try selecting multiple lines and pressing cmd-/</textarea>
+</div>
+
+<script>
+// Hybrid initialization script
+let initializationMode = 'unknown';
+let cmInstance = null;
+
+function updateStatus(message, isSuccess = null) {
+    const statusDiv = document.getElementById('status-content');
+    let color = '';
+    if (isSuccess === true) color = 'color: green;';
+    else if (isSuccess === false) color = 'color: red;';
+    
+    statusDiv.innerHTML = `<p style="${color}">${message}</p>`;
+    console.log(`Status: ${message}`);
+}
+
+function testCommentToggle() {
+    if (!cmInstance) {
+        updateStatus('No CodeMirror instance available for testing', false);
+        return false;
+    }
+    
+    try {
+        const extraKeys = cmInstance.getOption('extraKeys');
+        const hasCmd = extraKeys && extraKeys['Cmd-/'] === 'toggleComment';
+        const hasCtrl = extraKeys && extraKeys['Ctrl-/'] === 'toggleComment';
+        const commandAvailable = typeof CodeMirror.commands.toggleComment === 'function';
+        
+        // Test actual toggle
+        const cursor = cmInstance.getCursor();
+        const lineBefore = cmInstance.getLine(cursor.line);
+        CodeMirror.commands.toggleComment(cmInstance);
+        const lineAfter = cmInstance.getLine(cursor.line);
+        const toggleWorked = lineBefore !== lineAfter;
+        
+        // Toggle back
+        if (toggleWorked) {
+            CodeMirror.commands.toggleComment(cmInstance);
+        }
+        
+        const results = {
+            mode: initializationMode,
+            hasCmd,
+            hasCtrl,
+            commandAvailable,
+            toggleWorked,
+            allPassed: hasCmd && hasCtrl && commandAvailable && toggleWorked
+        };
+        
+        console.log('Test Results:', results);
+        
+        if (results.allPassed) {
+            updateStatus(`✅ cmd-/ is working! (initialized via ${initializationMode})`, true);
+        } else {
+            updateStatus(`❌ cmd-/ not fully working. Check console for details.`, false);
+        }
+        
+        return results;
+    } catch (error) {
+        console.error('Test error:', error);
+        updateStatus(`❌ Test error: ${error.message}`, false);
+        return false;
+    }
+}
+
+function initializeDirectCodeMirror() {
+    console.log('Attempting direct CodeMirror initialization...');
+    
+    try {
+        const textarea = document.getElementById('test-editor');
+        if (!textarea) {
+            throw new Error('Textarea not found');
+        }
+        
+        // Check if already initialized by Thebe
+        const existingCM = document.querySelector('.CodeMirror');
+        if (existingCM && existingCM.CodeMirror) {
+            cmInstance = existingCM.CodeMirror;
+            initializationMode = 'thebe';
+            updateStatus('CodeMirror already initialized by Thebe');
+            return true;
+        }
+        
+        // Initialize directly
+        cmInstance = CodeMirror.fromTextArea(textarea, {
+            mode: 'python',
+            theme: 'neo',
+            lineNumbers: true,
+            indentUnit: 4,
+            extraKeys: {
+                'Cmd-/': 'toggleComment',
+                'Ctrl-/': 'toggleComment'
+            }
+        });
+        
+        initializationMode = 'direct';
+        updateStatus('CodeMirror initialized directly (Thebe not available)');
+        
+        // Add key handler to log usage
+        cmInstance.on('keyHandled', (cm, name, event) => {
+            if (name === 'Cmd-/' || name === 'Ctrl-/') {
+                updateStatus(`✅ Comment toggled via ${name} at ${new Date().toLocaleTimeString()}`, true);
+            }
+        });
+        
+        return true;
+    } catch (error) {
+        console.error('Direct initialization failed:', error);
+        updateStatus(`Failed to initialize CodeMirror: ${error.message}`, false);
+        return false;
+    }
+}
+
+// Wait for Thebe or timeout
+let thebeCheckCount = 0;
+const maxThebeChecks = 10; // 5 seconds
+
+function checkInitialization() {
+    thebeCheckCount++;
+    
+    // Check if Thebe created a CodeMirror instance
+    const cmElement = document.querySelector('.CodeMirror');
+    if (cmElement && cmElement.CodeMirror) {
+        cmInstance = cmElement.CodeMirror;
+        initializationMode = 'thebe';
+        updateStatus('✅ CodeMirror initialized by Thebe', true);
+        
+        // Run test after a short delay
+        setTimeout(() => {
+            testCommentToggle();
+            
+            // Expose for console testing
+            window.cmTest = {
+                instance: cmInstance,
+                test: testCommentToggle,
+                mode: initializationMode
+            };
+        }, 500);
+        return;
+    }
+    
+    // Check if we should give up on Thebe
+    if (thebeCheckCount >= maxThebeChecks) {
+        updateStatus('Thebe initialization timeout, falling back to direct initialization');
+        if (initializeDirectCodeMirror()) {
+            setTimeout(() => {
+                testCommentToggle();
+                
+                // Expose for console testing
+                window.cmTest = {
+                    instance: cmInstance,
+                    test: testCommentToggle,
+                    mode: initializationMode
+                };
+            }, 500);
+        }
+        return;
+    }
+    
+    // Keep checking
+    updateStatus(`Waiting for Thebe... (${thebeCheckCount}/${maxThebeChecks})`);
+    setTimeout(checkInitialization, 500);
+}
+
+// Start checking after page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(checkInitialization, 1000);
+    });
+} else {
+    setTimeout(checkInitialization, 1000);
+}
+</script>
+```
+
+## Testing Instructions
+
+This page will automatically:
+1. Try to initialize CodeMirror via Thebe
+2. Fall back to direct initialization if Thebe fails (e.g., on localhost)
+3. Run automated tests to verify cmd-/ functionality
+
+### Manual Testing
+1. Wait for initialization to complete
+2. Click in the editor
+3. Press **Cmd-/** (Mac) or **Ctrl-/** (Windows/Linux)
+4. Lines should toggle between commented/uncommented
+
+### Console Testing
+```javascript
+// Get test results
+window.cmTest.test()
+
+// Check initialization mode
+window.cmTest.mode
+
+// Access CodeMirror instance
+window.cmTest.instance
+```
