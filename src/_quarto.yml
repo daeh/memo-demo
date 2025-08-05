@@ -1,9 +1,6 @@
 project:
   type: website
   output-dir: ../docs
-  resources:
-    - "test-codemirror-static-html.html"
-    - "test-codemirror-static-html-translate.html"
 
 website:
   title: "Memo Demo"

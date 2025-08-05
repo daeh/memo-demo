@@ -114,8 +114,8 @@
     }
 
     moveStatusToNavbar() {
-      // Function to attempt moving the status widget
-      const attemptMove = () => {
+      // Set up observer to watch for Thebe status widget updates
+      const observer = new MutationObserver((mutations) => {
         const statusDisplay = this.findThebeStatus();
         const statusContainer = this.navbar.querySelector(
           ".thebe-status-container"
@@ -126,36 +126,31 @@
           statusContainer &&
           !statusContainer.contains(statusDisplay)
         ) {
-          // Move it immediately - don't wait for content
-          statusContainer.appendChild(statusDisplay);
+          // Check if Thebe has populated the widget (has content or specific classes)
+          const hasContent = statusDisplay.textContent.trim().length > 0;
+          const hasStatusClass = Array.from(statusDisplay.classList).some(cls => 
+            cls.startsWith('thebe-status-') && cls !== 'thebe-status'
+          );
           
-          // Make it visible now that it's in the navbar
-          statusDisplay.style.display = '';
-          
-          console.log('✅ Moved Thebe status widget to navbar immediately');
-          console.log('Widget content:', statusDisplay.textContent);
-          console.log('Widget classes:', statusDisplay.className);
-          
-          // Apply responsive text sizing
-          this.updateResponsiveStatusText();
-          
-          this.checkForThebeButtons();
-          
-          return true; // Successfully moved
-        }
-        return false; // Not yet moved
-      };
-
-      // Try to move immediately
-      if (attemptMove()) {
-        return; // Success, we're done
-      }
-
-      // If not found yet, set up observer to watch for it
-      const observer = new MutationObserver((mutations) => {
-        if (attemptMove()) {
-          // Successfully moved, stop observing
-          observer.disconnect();
+          if (hasContent || hasStatusClass) {
+            // Widget is populated, move it to navbar
+            statusContainer.appendChild(statusDisplay);
+            
+            // Make it visible now that it's in the navbar
+            statusDisplay.style.display = '';
+            
+            console.log('✅ Moved populated Thebe status widget to navbar');
+            console.log('Widget content:', statusDisplay.textContent);
+            console.log('Widget classes:', statusDisplay.className);
+            
+            // Apply responsive text sizing
+            this.updateResponsiveStatusText();
+            
+            this.checkForThebeButtons();
+            
+            // Stop observing once moved
+            observer.disconnect();
+          }
         }
       });
       
@@ -168,25 +163,10 @@
         attributeFilter: ['class']
       });
       
-      // Also set up a polling mechanism as a fallback
-      let pollCount = 0;
-      const pollInterval = setInterval(() => {
-        pollCount++;
-        
-        if (attemptMove()) {
-          // Successfully moved
-          clearInterval(pollInterval);
-          observer.disconnect();
-        } else if (pollCount > 50) {
-          // Stop after 5 seconds (100ms * 50)
-          clearInterval(pollInterval);
-          console.warn('⚠️ Could not find Thebe status widget after 5 seconds');
-        }
-      }, 100);
-      
-      // Hide any status widget found outside navbar immediately
+      // Also check immediately in case it's already populated
       const statusDisplay = this.findThebeStatus();
       if (statusDisplay) {
+        // Hide it until we move it
         statusDisplay.style.display = 'none';
       }
     }

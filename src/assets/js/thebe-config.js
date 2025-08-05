@@ -63,31 +63,6 @@
       // Load CodeMirror theme CSS
       await utils.loadCSS("https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/neo.min.css");
       
-      // Load CodeMirror comment addon for toggle comment functionality
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/comment/comment.min.js';
-      document.head.appendChild(script);
-      await new Promise((resolve) => {
-        script.onload = resolve;
-        script.onerror = () => {
-          console.warn('Failed to load CodeMirror comment addon, comment toggling may not work');
-          resolve();
-        };
-      });
-      
-      // Ensure comment addon is fully loaded before proceeding
-      await new Promise((resolve) => {
-        const checkAddon = () => {
-          if (window.CodeMirror && window.CodeMirror.commands && window.CodeMirror.commands.toggleComment) {
-            console.log('✅ CodeMirror comment addon loaded successfully');
-            resolve();
-          } else {
-            setTimeout(checkAddon, 50);
-          }
-        };
-        checkAddon();
-      });
-      
       // Set up observer to manage UI elements
       setupMutationObserver();
       
@@ -677,77 +652,6 @@
         thebeActions.restartKernel();
       }
     });
-    
-    // Set up CodeMirror comment toggling
-    setupCodeMirrorCommentToggle();
-  }
-  
-  function setupCodeMirrorCommentToggle() {
-    // Wait a bit for CodeMirror instances to be created
-    setTimeout(() => {
-      configureAllCodeMirrorInstances();
-    }, 1000);
-    
-    // Also set up observer for future CodeMirror instances
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach((node) => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            // Check if this is or contains a CodeMirror element
-            if (node.classList?.contains('CodeMirror')) {
-              configureCodeMirrorInstance(node);
-            } else if (node.querySelectorAll) {
-              node.querySelectorAll('.CodeMirror').forEach(configureCodeMirrorInstance);
-            }
-          }
-        });
-      });
-    });
-    
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
-  }
-  
-  function configureAllCodeMirrorInstances() {
-    document.querySelectorAll('.CodeMirror').forEach(configureCodeMirrorInstance);
-  }
-  
-  function configureCodeMirrorInstance(element) {
-    if (element.CodeMirror && !element.dataset.commentToggleConfigured) {
-      const cm = element.CodeMirror;
-      
-      // Verify comment addon is available
-      if (!window.CodeMirror || !window.CodeMirror.commands || !window.CodeMirror.commands.toggleComment) {
-        console.warn('CodeMirror comment addon not available for instance configuration');
-        return;
-      }
-      
-      try {
-        // Get current extraKeys and preserve existing shortcuts
-        const currentExtraKeys = cm.getOption('extraKeys') || {};
-        
-        // Add comment toggle shortcuts
-        cm.setOption('extraKeys', {
-          ...currentExtraKeys,
-          'Cmd-/': 'toggleComment',
-          'Ctrl-/': 'toggleComment'
-        });
-        
-        element.dataset.commentToggleConfigured = 'true';
-        
-        // Verify configuration was applied
-        const verifyKeys = cm.getOption('extraKeys') || {};
-        if (verifyKeys['Cmd-/'] === 'toggleComment' && verifyKeys['Ctrl-/'] === 'toggleComment') {
-          console.log('✅ Comment toggle configured for CodeMirror instance');
-        } else {
-          console.error('❌ Failed to configure comment toggle - extraKeys not set properly');
-        }
-      } catch (error) {
-        console.error('❌ Error configuring CodeMirror instance:', error);
-      }
-    }
   }
 
   // ---------- STATUS HELPERS (Using Official API) ----------
@@ -873,50 +777,6 @@
     }, 1000); // Check every second
   }
 
-
-  // ---------- TESTING FUNCTIONS ----------
-  function testCommentToggleFunctionality() {
-    const results = {
-      addonLoaded: !!window.CodeMirror?.commands?.toggleComment,
-      instances: [],
-      summary: { total: 0, configured: 0, working: 0 }
-    };
-    
-    const cmElements = document.querySelectorAll('.CodeMirror');
-    results.summary.total = cmElements.length;
-    
-    cmElements.forEach((el, index) => {
-      if (el.CodeMirror) {
-        const cm = el.CodeMirror;
-        const extraKeys = cm.getOption('extraKeys') || {};
-        const hasCommentToggle = extraKeys['Cmd-/'] === 'toggleComment' && 
-                                extraKeys['Ctrl-/'] === 'toggleComment';
-        
-        const instanceData = {
-          index,
-          configured: hasCommentToggle,
-          extraKeys: Object.keys(extraKeys),
-          hasCommentCommand: !!cm.commands?.toggleComment
-        };
-        
-        results.instances.push(instanceData);
-        
-        if (hasCommentToggle) results.summary.configured++;
-        if (hasCommentToggle && window.CodeMirror?.commands?.toggleComment) results.summary.working++;
-      }
-    });
-    
-    console.group('Comment Toggle Test Results');
-    console.log('Addon loaded:', results.addonLoaded);
-    console.log('Instances:', `${results.summary.working}/${results.summary.total} working`);
-    console.table(results.instances);
-    console.groupEnd();
-    
-    return results;
-  }
-  
-  // Expose for debugging
-  window.testCommentToggle = testCommentToggleFunctionality;
 
   // ---------- PUBLIC API ----------
   window.bootstrapThebe = bootstrapThebe;
