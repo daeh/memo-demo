@@ -1,31 +1,164 @@
 [
   {
-    "objectID": "test.html#testing-kernel-file-access",
-    "href": "test.html#testing-kernel-file-access",
-    "title": "Thebe Kernel File Access Test",
-    "section": "Testing Kernel File Access",
-    "text": "Testing Kernel File Access\nThis notebook helps debug what files the Thebe kernel can access.\n\nCurrent Working Directory\n\nimport os\nprint(\"Current working directory:\", os.getcwd())\n\n\n\nList Files in Current Directory\n\nimport os\nfiles = os.listdir('.')\nprint(f\"Files in current directory ({len(files)} total):\")\nfor f in sorted(files)[:20]:  # Show first 20 files\n    print(f\"  - {f}\")\nif len(files) &gt; 20:\n    print(f\"  ... and {len(files) - 20} more files\")\n\n\n\nCheck for Common Directories\n\nimport os\n\ndirs_to_check = [\n    'src',\n    'src/assets',\n    'src/assets/img',\n    'assets',\n    'assets/img',\n    'demos',\n    'demos/assets',\n    '../assets',\n    '../src',\n    '.'\n]\n\nprint(\"Checking for directories:\")\nfor dir_path in dirs_to_check:\n    exists = os.path.exists(dir_path)\n    is_dir = os.path.isdir(dir_path) if exists else False\n    print(f\"  {dir_path:&lt;20} exists: {exists:&lt;5} is_dir: {is_dir}\")\n\n\n\nCheck for the Logo Maze Image\n\nimport os\n\nimage_paths = [\n    'src/assets/img/logo-maze.png',\n    'assets/img/logo-maze.png',\n    'logo-maze.png',\n    '../assets/img/logo-maze.png',\n    'src/demos/assets/logo-maze.png',  # Old path\n    'demos/assets/logo-maze.png'\n]\n\nprint(\"Checking for logo-maze.png:\")\nfor path in image_paths:\n    exists = os.path.exists(path)\n    print(f\"  {path:&lt;40} exists: {exists}\")\n    if exists:\n        print(f\"    -&gt; Full path: {os.path.abspath(path)}\")\n\n\n\nList Files in src Directory (if it exists)\n\nimport os\n\nif os.path.exists('src') and os.path.isdir('src'):\n    print(\"Contents of 'src' directory:\")\n    for root, dirs, files in os.walk('src'):\n        level = root.replace('src', '').count(os.sep)\n        indent = ' ' * 2 * level\n        print(f'{indent}{os.path.basename(root)}/')\n        subindent = ' ' * 2 * (level + 1)\n        for file in files[:5]:  # Limit files shown per directory\n            print(f'{subindent}{file}')\n        if len(files) &gt; 5:\n            print(f'{subindent}... and {len(files) - 5} more files')\nelse:\n    print(\"'src' directory not found\")\n\n\n\nPython Path and Module Search Paths\n\nimport sys\nprint(\"Python executable:\", sys.executable)\nprint(\"\\nPython path (sys.path):\")\nfor i, path in enumerate(sys.path[:10]):  # Show first 10 paths\n    print(f\"  {i}: {path}\")\nif len(sys.path) &gt; 10:\n    print(f\"  ... and {len(sys.path) - 10} more paths\")\n\n\n\nEnvironment Variables\n\nimport os\nenv_vars = ['HOME', 'PWD', 'JUPYTER_PATH', 'PATH']\nprint(\"Relevant environment variables:\")\nfor var in env_vars:\n    value = os.environ.get(var, 'Not set')\n    if var == 'PATH' and value != 'Not set':\n        # Show only first few PATH entries\n        paths = value.split(':')\n        print(f\"  {var}: {paths[0]}\")\n        for p in paths[1:3]:\n            print(f\"       {p}\")\n        if len(paths) &gt; 3:\n            print(f\"       ... and {len(paths) - 3} more paths\")\n    else:\n        print(f\"  {var}: {value}\")\n\n\n\nAttempting to Load the Image\n\nimport matplotlib.pyplot as plt\nimport numpy as np\n\n# Try different paths\npaths_to_try = [\n    'src/assets/img/logo-maze.png',\n    'assets/img/logo-maze.png',\n    './src/assets/img/logo-maze.png'\n]\n\nfor path in paths_to_try:\n    try:\n        img = plt.imread(path)\n        print(f\"✓ Successfully loaded image from: {path}\")\n        print(f\"  Image shape: {img.shape}\")\n        break\n    except FileNotFoundError:\n        print(f\"✗ Could not load from: {path}\")\n    except Exception as e:\n        print(f\"✗ Error loading {path}: {type(e).__name__}: {e}\")"
-  },
-  {
-    "objectID": "game23.html#memo-models-are-decorated-functions",
-    "href": "game23.html#memo-models-are-decorated-functions",
-    "title": "2/3rds Game",
-    "section": "memo models are decorated functions",
-    "text": "memo models are decorated functions\n\nfrom memo import memo\n\nX = [1, 2, 3]\nY = range(10)\n\n@memo\ndef my_model[x: X, y: Y](a, b=2, c=None):\n    return x + y\n\nmy_model(1, b=2, c=3)\n\n\nYou can convert the output array into an pandas DataFrame or an xarray for easy indexing:\n\nres = my_model(1, b=2, c=3, \n                        return_aux=True, \n                        return_pandas=True, \n                        return_xarray=True)\ndata = res.data\ndf = res.aux.pandas\nxa = res.aux.xarray\nprint(f\"===JAX array===\"); print(data)\nprint(f\"\\n===pandas===\"); print(df.head())\nprint(f\"\\n===xarray===\"); print(xa)\n\n\nchooses()\n\nimport jax.numpy as np\n\nZ = np.arange(100) + 1\n\n@memo\ndef my_model[z: Z]():\n    kartik: chooses(z in Z, wpp=1)\n    return E[kartik.z == z]\n\nmy_model()\n\n\n\nexpressions\n\nimport jax.numpy as np\n\nZ = np.arange(100) + 1\n\n@memo\ndef my_model[z: Z]():\n    kartik: chooses(z in Z, wpp=1)\n    return Pr[exp(kartik.z) &gt; 5]\n\nmy_model()\n\n\n\n@memo\ndef my_model[z: Z]():\n    kartik: chooses(z in Z, wpp=3 if z % 2 == 0 else 1)\n    return E[kartik.z == z]\n\nmy_model()\n\n\n\nfrom matplotlib import pyplot as plt\nimport jax\nfrom jax.scipy.stats.norm import pdf as normpdf\n\ngaussianpdf = jax.jit(normpdf)\n\n@memo\ndef my_model[z: Z]():\n    kartik: chooses(z in Z, wpp=gaussianpdf(z, 20, 5))\n    return E[kartik.z == z]\n\nplt.plot(Z, my_model())\n\n\n\nthinks[]\n\n@memo\ndef my_model[z: Z]():\n    kartik: thinks[\n        maxkw: chooses(z in Z, wpp=3 if z % 2 == 0 else 1)\n    ]\n    return kartik[ E[maxkw.z == 1]]\n\nmy_model()"
-  },
-  {
-    "objectID": "rsa.html",
-    "href": "rsa.html",
-    "title": "RSA",
+    "objectID": "minimal-with-thebe-explicit.html",
+    "href": "minimal-with-thebe-explicit.html",
+    "title": "Minimal with Thebe Integration (Explicit)",
     "section": "",
-    "text": "from memo import memo\nimport jax\nimport jax.numpy as np\nfrom enum import IntEnum\n\nprint(jax.__version__)\n\nclass U(IntEnum):  # utterance space\n    GREEN  = 0\n    PINK   = 1\n    SQUARE = 2\n    ROUND  = 3\n\nclass R(IntEnum):  # referent space\n    GREEN_SQUARE = 0\n    GREEN_CIRCLE = 1\n    PINK_CIRCLE  = 2\n\n@jax.jit\ndef denotes(u, r):\n    return np.array([\n    #    green square\n    #    |  green circle\n    #    |  |  pink circle\n    #    |  |  |\n        [1, 1, 0],  # \"green\"\n        [0, 0, 1],  # \"pink\"\n        [1, 0, 0],  # \"square\"\n        [0, 1, 1]   # \"round\"\n    ])[u, r]\n\n\n@memo\ndef L[u: U, r: R](beta, t):\n    listener: thinks[\n        speaker: given(r in R, wpp=1),\n        speaker: chooses(u in U, wpp=\n            denotes(u, r) * (1 if t == 0 else exp(beta * L[u, r](beta, t - 1))))\n    ]\n    listener: observes [speaker.u] is u\n    listener: chooses(r in R, wpp=Pr[speaker.r == r])\n    return Pr[listener.r == r]\n\nbeta = 1.\nprint(L(beta, 0))\nprint(L(beta, 1))\n\n\n## Fitting the model to data...\nY = np.array([65, 115, 0]) / 180  # data from Qing & Franke 2015\n@jax.jit\ndef loss(beta):\n    return np.mean((L(beta, 1)[0] - Y) ** 2)\n\nfrom matplotlib import pyplot as plt\nplt.figure(figsize=(5, 4))\n\n## Fitting by gradient descent!\nvg = jax.value_and_grad(loss)\nlosses = []\nbeta = 0.\nfor _ in range(26):\n    l, dbeta = vg(beta)\n    losses.append(l)\n    beta = beta - dbeta * 12.\nplt.plot(np.arange(len(losses)), losses)\nplt.ylabel('MSE (%)')\nplt.xlabel('Step #')\nplt.yticks([0, 0.02], [0, 2])\nplt.title('Gradient descent')\n\nplt.tight_layout()"
+    "text": "This page includes Thebe and shows exactly what happens - no hidden fallbacks.\n\n\n\n    \n    \n        ⏳ Waiting for page load...\n    \n\n\n\n\n    Thebe-enabled Editor: This textarea has data-executable=\"true\"\n    # This editor should be processed by Thebe\nprint(\"Hello from Thebe!\")\nx = 42\n# Press cmd-/ here to test comment toggle\n\n\n\n    \n    \n        Analysis will appear here...\n    \n\n\n\n    \n    Check Thebe Status\n    Check CodeMirror Instances\n    Check Configuration"
   },
   {
-    "objectID": "demo-eig.html",
-    "href": "demo-eig.html",
-    "title": "Question-asking based on Expected Information Gain (EIG)",
+    "objectID": "minimal-with-thebe-explicit.html#thebe-integration-test",
+    "href": "minimal-with-thebe-explicit.html#thebe-integration-test",
+    "title": "Minimal with Thebe Integration (Explicit)",
     "section": "",
-    "text": "Inspired by: Rothe, A., Lake, B. M., & Gureckis, T. M. (2018). Do people ask good questions?. Computational Brain & Behavior, 1, 69-89.\nBob rolls a red die and a blue die. Alice gets to ask one yes-no question about the sum. What is the most informative question she could ask, in order to learn the most about the two die rolls? For example, is it better to ask if the sum is a perfect square, or if the sum is prime?\nWe’ll compute the EIG of various questions…\n\nfrom memo import memo\nimport jax\nimport jax.numpy as np\n\nis_prime  = np.array([0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0])\nis_square = np.array([1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0])\nis_pow_2  = np.array([0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0])\nQs = [\n    lambda n: n == 7,\n    lambda n: n == 12,\n    lambda n: n &gt; 10,\n    lambda n: n &gt; 8,\n    lambda n: n &gt; 6,\n    lambda n: n &gt; 5,\n    lambda n: n % 2 == 0,  # even??\n    lambda n: n % 2 == 1,  # odd??\n    lambda n: n % 3 == 0,\n    lambda n: n % 4 == 0,\n    lambda n: n % 5 == 0,\n    lambda n: is_prime[n],\n    lambda n: is_square[n],\n    lambda n: is_pow_2[n],\n]\n\nN = np.arange(1, 6 + 1)  # single die's outcomes\nQ = np.arange(len(Qs))   # questions\nA = np.array([0, 1])     # answers (yes/no)\n\n@jax.jit\ndef respond(q, a, n):\n    return np.array([q_(n) for q_ in Qs])[q] == a\n\n@memo\ndef eig[q: Q]():\n    alice: knows(q)\n    alice: thinks[\n        # bob rolls dice...\n        bob: chooses(n_red in N, wpp=1),\n        bob: chooses(n_blu in N, wpp=1),\n\n        # bob answers question...\n        bob: knows(q),\n        bob: chooses(a in A, wpp=respond(q, a, n_red + n_blu))\n    ]\n    alice: snapshots_self_as(future_self)\n\n    return alice[ imagine[\n        # if I were to get the answer...\n        future_self: observes [bob.a] is bob.a,\n        # EIG = entropy minus conditional entropy\n        H[bob.n_red, bob.n_blu] - E[future_self[ H[bob.n_red, bob.n_blu] ]]\n    ] ]\n\nz = eig()\n%timeit -r 10 -n 100 eig().block_until_ready()\n\n## print questions and EIGs in sorted order\nprint('EIG     Question')\nprint('---     ---')\nimport inspect\nq_names = [inspect.getsource(q_).strip()[10:-1] for q_ in Qs]\nfor eig_, q_ in reversed(sorted(list(zip(z, q_names)))):\n    print(f'{eig_:0.5f}', q_)"
+    "text": "This page includes Thebe and shows exactly what happens - no hidden fallbacks.\n\n\n\n    \n    \n        ⏳ Waiting for page load...\n    \n\n\n\n\n    Thebe-enabled Editor: This textarea has data-executable=\"true\"\n    # This editor should be processed by Thebe\nprint(\"Hello from Thebe!\")\nx = 42\n# Press cmd-/ here to test comment toggle\n\n\n\n    \n    \n        Analysis will appear here...\n    \n\n\n\n    \n    Check Thebe Status\n    Check CodeMirror Instances\n    Check Configuration"
+  },
+  {
+    "objectID": "minimal-with-thebe-explicit.html#what-this-page-does",
+    "href": "minimal-with-thebe-explicit.html#what-this-page-does",
+    "title": "Minimal with Thebe Integration (Explicit)",
+    "section": "What This Page Does",
+    "text": "What This Page Does\n\nNo hidden fallbacks - Shows exactly what Thebe does or doesn’t do\nStatus monitoring - Displays real-time status of Thebe\nManual checks - Buttons to inspect the current state\nEvent logging - Shows Thebe events as they happen"
+  },
+  {
+    "objectID": "minimal-with-thebe-explicit.html#expected-on-localhost",
+    "href": "minimal-with-thebe-explicit.html#expected-on-localhost",
+    "title": "Minimal with Thebe Integration (Explicit)",
+    "section": "Expected on Localhost",
+    "text": "Expected on Localhost\nSince Thebe fails on localhost due to CORS: - Thebe library loads ✅ - Thebe tries to connect to Binder ❌ - No CodeMirror instances created ❌ - cmd-/ doesn’t work ❌\nThis is the actual behavior we need to understand and fix!"
+  },
+  {
+    "objectID": "test-codemirror-direct.html",
+    "href": "test-codemirror-direct.html",
+    "title": "CodeMirror Direct Test (No Thebe)",
+    "section": "",
+    "text": "This page initializes CodeMirror directly without relying on Thebe, allowing us to test the comment toggle functionality.\n\n\n\n\n\n\n\n\n\n\n\n\n    \n    \n        ⏳ Initializing CodeMirror and running tests...\n    \n\n\n\n    Test Editor 1: Basic Python Code\n    # This is a test comment\nprint(\"Hello, World!\")\nx = 5\ny = 10\nresult = x + y\nprint(f\"The sum is: {result}\")\n\n\n\n    Test Editor 2: Function Example\n    def calculate_average(numbers):\n    # Check if list is empty\n    if not numbers:\n        return 0\n    \n    total = sum(numbers)\n    count = len(numbers)\n    return total / count\n\n# Test the function\ntest_data = [10, 20, 30, 40, 50]\navg = calculate_average(test_data)\nprint(f\"Average: {avg}\")\n\n\n\n    Manual Test Log: Press Cmd-/ or Ctrl-/ in the editors above"
+  },
+  {
+    "objectID": "test-codemirror-direct.html#testing-cmd--without-thebe",
+    "href": "test-codemirror-direct.html#testing-cmd--without-thebe",
+    "title": "CodeMirror Direct Test (No Thebe)",
+    "section": "",
+    "text": "This page initializes CodeMirror directly without relying on Thebe, allowing us to test the comment toggle functionality.\n\n\n\n\n\n\n\n\n\n\n\n\n    \n    \n        ⏳ Initializing CodeMirror and running tests...\n    \n\n\n\n    Test Editor 1: Basic Python Code\n    # This is a test comment\nprint(\"Hello, World!\")\nx = 5\ny = 10\nresult = x + y\nprint(f\"The sum is: {result}\")\n\n\n\n    Test Editor 2: Function Example\n    def calculate_average(numbers):\n    # Check if list is empty\n    if not numbers:\n        return 0\n    \n    total = sum(numbers)\n    count = len(numbers)\n    return total / count\n\n# Test the function\ntest_data = [10, 20, 30, 40, 50]\navg = calculate_average(test_data)\nprint(f\"Average: {avg}\")\n\n\n\n    Manual Test Log: Press Cmd-/ or Ctrl-/ in the editors above"
+  },
+  {
+    "objectID": "test-codemirror-direct.html#manual-testing-instructions",
+    "href": "test-codemirror-direct.html#manual-testing-instructions",
+    "title": "CodeMirror Direct Test (No Thebe)",
+    "section": "Manual Testing Instructions",
+    "text": "Manual Testing Instructions\n\nThe editors above are initialized with CodeMirror directly (no Thebe required)\nClick in either editor\nPress Cmd-/ (Mac) or Ctrl-/ (Windows/Linux)\nThe current line should toggle between commented/uncommented\nThe test log will update when you successfully use the shortcut"
+  },
+  {
+    "objectID": "test-codemirror-direct.html#console-commands",
+    "href": "test-codemirror-direct.html#console-commands",
+    "title": "CodeMirror Direct Test (No Thebe)",
+    "section": "Console Commands",
+    "text": "Console Commands\nOpen the browser console and run:\n// Check test results\nwindow.verifyCommentToggle()\n\n// Check first editor configuration\ndocument.querySelector('.CodeMirror').CodeMirror.getOption('extraKeys')\n\n// Manually trigger comment toggle\nCodeMirror.commands.toggleComment(document.querySelector('.CodeMirror').CodeMirror)"
+  },
+  {
+    "objectID": "demo-mdp.html",
+    "href": "demo-mdp.html",
+    "title": "MDP planning and inverse planning",
+    "section": "",
+    "text": "In this notebook we will set up a simple grid-world, plan routes to goals, and infer goals given actions.\n\nfrom functools import cache\nimport jax\nimport jax.numpy as np\nimport matplotlib.pyplot as plt\nfrom memo import memo\n\nH = 21\nW = 21\nS = np.arange(H * W)  # state space\nG = np.array([0, H * W - 1])  # possible goals: NW and SE corners\n\nA = np.array([0, 1, 2, 3])  # action space: left, right, up, down\ncoord_actions = np.array([[-1, 0], [+1, 0], [0, -1], [0, +1]])\n\nmaze_raw = np.array(1 - plt.imread('src/assets/img/logo-maze.png'), dtype=int)\nmaze = maze_raw.reshape(-1)\nassert maze_raw.size == H * W\n\n# # Alternatively...\n# maze = np.zeros(H * W)  # blank maze\n\n# transition function: P(s_ | s, a)\n@jax.jit\ndef Tr(s, a, s_):\n    x, y = s % W, s // W\n    next_coords = np.array([x, y]) + coord_actions[a]\n    next_state = (\n        + 1 * np.clip(next_coords[0], 0, W - 1)\n        + W * np.clip(next_coords[1], 0, H - 1)\n    )\n    return (\n        + 1.0 * ((maze[next_state] == 0) & (next_state == s_))  # next state free, can move there\n        + 1.0 * ((maze[next_state] == 1) & (s == s_)) # next state occupied, stay where you are\n    )\n\n# reward function\n@jax.jit\ndef R(s, a, g):\n    return 1.0 * (s == g) - 0.1\n\n@jax.jit\ndef is_terminating(s, g):\n    return s == g\n\n# discount factor\n@jax.jit\ndef gamma():\n    return 1.0\n\nprint('loaded!')\n\nWe can plan via Q-value iteration and inverse-plan by inferring \\(P(g \\mid s, a)\\) where \\(P(a \\mid s, g)\\) is given by a softmax over Q-value with \\(\\beta=2\\).\n\n@cache\n@memo\ndef Q[s: S, a: A, g: G](t):\n    alice: knows(s, a, g)\n    alice: given(s_ in S, wpp=Tr(s, a, s_))\n    alice: chooses(a_ in A, to_maximize=0.0 if t &lt; 0 else Q[s_, a_, g](t - 1))\n    return E[\n        R(s, a, g) + (0.0 if t &lt; 0 else\n                      0.0 if is_terminating(s, g) else\n                      gamma() * Q[alice.s_, alice.a_, g](t - 1))\n    ]\n\n@memo\ndef invplan[s: S, a: A, g: G](t):\n    observer: knows(a, s, g)\n    observer: thinks[\n        alice: chooses(g in G, wpp=1),\n        alice: knows(s),\n        alice: chooses(a in A, wpp=exp(2 * Q[s, a, g](t))),\n    ]\n    observer: observes [alice.a] is a\n    return observer[E[alice.g == g]]\n\nQ(0)  # pre-compile Q\nprint(\"starting...\")\nip = invplan(100)\nv = Q(100).max(axis=1)\nprint(\"done!\")\n\nThis is already pretty fast, though it is even faster on a GPU.\nFinally, let’s make the plots shown in the paper.\n\nplt.figure(figsize=(3, 3))\n\nplt.subplot(2, 2, 1)\nplt.imshow((v[:, 0].reshape(H, W)))\nplt.imshow(1 - maze_raw, cmap='gray', alpha=1. * maze_raw)\nplt.plot([0], [0], 'r*')\nplt.plot([20], [20], 'b*')\nplt.xticks([]); plt.yticks([])\nplt.title('(a)')\n\nplt.subplot(2, 2, 2)\nplt.imshow((v[:, 1].reshape(H, W)))\nplt.imshow(1 - maze_raw, cmap='gray', alpha=1. * maze_raw)\nplt.xticks([]); plt.yticks([])\nplt.plot([0], [0], 'r*')\nplt.plot([20], [20], 'b*')\nplt.title('(b)')\n\ndip = ip[:, :, 0] - ip[:, :, 1]\nplt.subplot(2, 2, 3)\nplt.imshow(dip[:, 0].reshape(H, W), cmap='bwr', vmin=-1, vmax=+1)\nplt.imshow(1 - maze_raw, cmap='gray', alpha=1. * maze_raw)\nplt.xticks([]); plt.yticks([])\nplt.plot([0], [0], 'r*')\nplt.plot([20], [20], 'b*')\nplt.title('(c)')\n\nplt.subplot(2, 2, 4)\nplt.imshow(dip[:, 3].reshape(H, W), cmap='bwr', vmin=-1, vmax=+1)\nplt.imshow(1 - maze_raw, cmap='gray', alpha=1. * maze_raw)\nplt.xticks([]); plt.yticks([])\nplt.plot([0], [0], 'r*')\nplt.plot([20], [20], 'b*')\nplt.title('(d)')\n\nplt.tight_layout()"
+  },
+  {
+    "objectID": "minimal-thebe-no-kernel.html",
+    "href": "minimal-thebe-no-kernel.html",
+    "title": "Minimal Thebe Without Kernel",
+    "section": "",
+    "text": "What if we configure Thebe to NOT request a kernel? This might let it initialize CodeMirror without trying to connect to Binder.\n\n\n\n\n\n\n\n\n\n\n\n\n    Status: Initializing...\n\n\n\n    Test: If this works, cmd-/ should toggle comments even on localhost\n    # Test no-kernel Thebe\nprint(\"Hello World\")\n# Press cmd-/ to toggle comments\nx = 42\n\n\nBootstrap Thebe (No Kernel)\nCheck Status"
+  },
+  {
+    "objectID": "minimal-thebe-no-kernel.html#thebe-for-ui-only",
+    "href": "minimal-thebe-no-kernel.html#thebe-for-ui-only",
+    "title": "Minimal Thebe Without Kernel",
+    "section": "",
+    "text": "What if we configure Thebe to NOT request a kernel? This might let it initialize CodeMirror without trying to connect to Binder.\n\n\n\n\n\n\n\n\n\n\n\n\n    Status: Initializing...\n\n\n\n    Test: If this works, cmd-/ should toggle comments even on localhost\n    # Test no-kernel Thebe\nprint(\"Hello World\")\n# Press cmd-/ to toggle comments\nx = 42\n\n\nBootstrap Thebe (No Kernel)\nCheck Status"
+  },
+  {
+    "objectID": "minimal-thebe-no-kernel.html#theory",
+    "href": "minimal-thebe-no-kernel.html#theory",
+    "title": "Minimal Thebe Without Kernel",
+    "section": "Theory",
+    "text": "Theory\nBy setting \"requestKernel\": false, Thebe might: 1. Skip the Binder connection that causes CORS errors 2. Still create CodeMirror instances with our configuration 3. Allow cmd-/ to work even on localhost\nLet’s test it!"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "memo",
+    "section": "",
+    "text": "from memo import memo\nimport jax\nimport jax.numpy as np\nfrom enum import IntEnum\n\nprint(jax.__version__)\n\n\nSuggested demos\n\nScalar Implicature\nQuestion-asking via expected information gain\nPlanning and inverse-planning in an MDP\n\n\n\n\nmemo resources\n\nmemo GitHub Repo\nThe memo handbook\nGitHub Discussions - To ask questions about memo, and to get help from other memo users.\nMailing list - For updates on memo’s development."
+  },
+  {
+    "objectID": "ultra-minimal-codemirror.html",
+    "href": "ultra-minimal-codemirror.html",
+    "title": "Ultra Minimal",
+    "section": "",
+    "text": "print(\"Press cmd-/\")"
+  },
+  {
+    "objectID": "compare-translation.html",
+    "href": "compare-translation.html",
+    "title": "Translation Comparison",
+    "section": "",
+    "text": "Step 1: Changed theme from ‘neo’ to ‘default’ to match qmd files\n\n\n\n    Testing: Both editors should support cmd-/ for comment toggle. The only difference is the theme."
+  },
+  {
+    "objectID": "compare-translation.html#codemirror-translation-progress",
+    "href": "compare-translation.html#codemirror-translation-progress",
+    "title": "Translation Comparison",
+    "section": "",
+    "text": "Step 1: Changed theme from ‘neo’ to ‘default’ to match qmd files\n\n\n\n    Testing: Both editors should support cmd-/ for comment toggle. The only difference is the theme."
+  },
+  {
+    "objectID": "verify-qmd-config.html",
+    "href": "verify-qmd-config.html",
+    "title": "QMD Configuration Verifier",
+    "section": "",
+    "text": "This page loads qmd-generated HTML files and extracts their Thebe configuration to verify cmd-/ is properly set up.\n\n\n\n    Select a page to verify:\n    \n        test-codemirror-static.html\n        index.html\n        demo.html\n        demo-eig.html\n        demo-mdp.html\n        demo-scalar-implicature.html\n        game23.html\n        rsa.html\n        test.html\n    \n    Verify Configuration"
+  },
+  {
+    "objectID": "verify-qmd-config.html#verify-cmd--configuration",
+    "href": "verify-qmd-config.html#verify-cmd--configuration",
+    "title": "QMD Configuration Verifier",
+    "section": "",
+    "text": "This page loads qmd-generated HTML files and extracts their Thebe configuration to verify cmd-/ is properly set up.\n\n\n\n    Select a page to verify:\n    \n        test-codemirror-static.html\n        index.html\n        demo.html\n        demo-eig.html\n        demo-mdp.html\n        demo-scalar-implicature.html\n        game23.html\n        rsa.html\n        test.html\n    \n    Verify Configuration"
+  },
+  {
+    "objectID": "verify-qmd-config.html#manual-verification",
+    "href": "verify-qmd-config.html#manual-verification",
+    "title": "QMD Configuration Verifier",
+    "section": "Manual Verification",
+    "text": "Manual Verification\nYou can also manually check the configuration in the browser console:\n// On any page with Thebe, run:\nconst config = JSON.parse(document.querySelector('script[type=\"text/x-thebe-config\"]')?.textContent || '{}');\nconsole.log('ExtraKeys:', config.codeMirrorConfig?.extraKeys);\n\n// To verify all pages at once:\nawait window.verifyAllPages();"
+  },
+  {
+    "objectID": "verify-qmd-config.html#why-cmd--doesnt-work-on-localhost",
+    "href": "verify-qmd-config.html#why-cmd--doesnt-work-on-localhost",
+    "title": "QMD Configuration Verifier",
+    "section": "Why cmd-/ Doesn’t Work on Localhost",
+    "text": "Why cmd-/ Doesn’t Work on Localhost\nEven though the configuration is correct:\n\nThebe fails on localhost due to CORS when connecting to Binder\nNo CodeMirror instances are created without Thebe\nConfiguration is correct but there’s nothing to apply it to\n\nThe configuration WILL work when deployed to a real server where Thebe can initialize properly."
+  },
+  {
+    "objectID": "minimal-codemirror.html",
+    "href": "minimal-codemirror.html",
+    "title": "Minimal CodeMirror with cmd-/",
+    "section": "",
+    "text": "This is the most basic qmd file with a CodeMirror editor where cmd-/ works for comments.\n\n\n\n\n\n\n\n\n\n\n\n    Instructions: Click in the editor below and press Cmd-/ (Mac) or Ctrl-/ (Windows/Linux) to toggle comments.\n\n\n# Test comment toggle\nprint(\"Hello, World!\")\nx = 5\ny = 10\nresult = x + y\nprint(f\"The sum is: {result}\")\n\n\n    Status: Initializing..."
+  },
+  {
+    "objectID": "minimal-codemirror.html#simplest-working-codemirror",
+    "href": "minimal-codemirror.html#simplest-working-codemirror",
+    "title": "Minimal CodeMirror with cmd-/",
+    "section": "",
+    "text": "This is the most basic qmd file with a CodeMirror editor where cmd-/ works for comments.\n\n\n\n\n\n\n\n\n\n\n\n    Instructions: Click in the editor below and press Cmd-/ (Mac) or Ctrl-/ (Windows/Linux) to toggle comments.\n\n\n# Test comment toggle\nprint(\"Hello, World!\")\nx = 5\ny = 10\nresult = x + y\nprint(f\"The sum is: {result}\")\n\n\n    Status: Initializing..."
+  },
+  {
+    "objectID": "minimal-codemirror.html#console-test",
+    "href": "minimal-codemirror.html#console-test",
+    "title": "Minimal CodeMirror with cmd-/",
+    "section": "Console Test",
+    "text": "Console Test\nOpen the browser console and run:\nwindow.testMinimal()"
   },
   {
     "objectID": "demo.html",
@@ -42,6 +175,97 @@
     "text": "Interactive Matplotlib Example\nHere’s an interactive sine plot using ipywidgets:\n\nimport ipywidgets as widgets\nfrom IPython.display import display\nimport matplotlib.pyplot as plt\nimport numpy as np\n\n# Use inline backend for basic display\n%matplotlib inline\n\nx = np.linspace(0,10)\n\ndef sine_func(x, w, amp):\n    return amp*np.sin(w*x)\n\n# Create interactive widgets\nw_slider = widgets.FloatSlider(value=1, min=0, max=4, step=0.25, description='w:')\namp_slider = widgets.FloatSlider(value=1, min=0, max=4, step=0.1, description='amp:')\noutput = widgets.Output()\n\ndef update_plot(change):\n    with output:\n        output.clear_output(wait=True)\n        plt.figure(figsize=(8, 4))\n        plt.ylim(-4, 4)\n        plt.plot(x, sine_func(x, w_slider.value, amp_slider.value))\n        plt.xlabel('x')\n        plt.ylabel('y')\n        plt.title(f'Sine wave: y = {amp_slider.value:.1f} * sin({w_slider.value:.2f} * x)')\n        plt.grid(True)\n        plt.show()\n\nw_slider.observe(update_plot, names='value')\namp_slider.observe(update_plot, names='value')\n\n# Initial plot\nupdate_plot(None)\n\n# Display widgets\ndisplay(widgets.VBox([w_slider, amp_slider, output]))"
   },
   {
+    "objectID": "codemirror-progression.html",
+    "href": "codemirror-progression.html",
+    "title": "CodeMirror cmd-/ Progression",
+    "section": "",
+    "text": "We’ve successfully created minimal qmd files where cmd-/ works for comment toggling. Here’s the progression:\n\n\n\nURL: test-codemirror-static-html.html\nTheme: neo\nMethod: Direct HTML file\ncmd-/ Status: ✅ WORKS\n\n\n\n\n\nURL: test-codemirror-static-html-translate.html\nTheme: default (matches qmd files)\nMethod: Direct HTML file\ncmd-/ Status: ✅ WORKS\n\n\n\n\n\nURL: minimal-codemirror.html\nTheme: default\nMethod: QMD file with direct CodeMirror initialization\ncmd-/ Status: ✅ WORKS\n\n\n\n\n\nURL: ultra-minimal-codemirror.html\nTheme: default\nMethod: Bare minimum QMD file\ncmd-/ Status: ✅ WORKS"
+  },
+  {
+    "objectID": "codemirror-progression.html#summary-cmd--works-in-qmd-files",
+    "href": "codemirror-progression.html#summary-cmd--works-in-qmd-files",
+    "title": "CodeMirror cmd-/ Progression",
+    "section": "",
+    "text": "We’ve successfully created minimal qmd files where cmd-/ works for comment toggling. Here’s the progression:\n\n\n\nURL: test-codemirror-static-html.html\nTheme: neo\nMethod: Direct HTML file\ncmd-/ Status: ✅ WORKS\n\n\n\n\n\nURL: test-codemirror-static-html-translate.html\nTheme: default (matches qmd files)\nMethod: Direct HTML file\ncmd-/ Status: ✅ WORKS\n\n\n\n\n\nURL: minimal-codemirror.html\nTheme: default\nMethod: QMD file with direct CodeMirror initialization\ncmd-/ Status: ✅ WORKS\n\n\n\n\n\nURL: ultra-minimal-codemirror.html\nTheme: default\nMethod: Bare minimum QMD file\ncmd-/ Status: ✅ WORKS"
+  },
+  {
+    "objectID": "codemirror-progression.html#key-finding",
+    "href": "codemirror-progression.html#key-finding",
+    "title": "CodeMirror cmd-/ Progression",
+    "section": "Key Finding",
+    "text": "Key Finding\nQMD files CAN have working cmd-/ functionality! The issue with the existing qmd files is that they rely on Thebe for CodeMirror initialization, and Thebe fails on localhost due to CORS."
+  },
+  {
+    "objectID": "codemirror-progression.html#test-it-yourself",
+    "href": "codemirror-progression.html#test-it-yourself",
+    "title": "CodeMirror cmd-/ Progression",
+    "section": "Test It Yourself",
+    "text": "Test It Yourself\n\nOpen any of the links above\nClick in the code editor\nPress Cmd-/ (Mac) or Ctrl-/ (Windows/Linux)\nThe line will toggle between commented/uncommented\n\n\nConsole Test\nOn any of the CodeMirror pages, run:\ndocument.querySelector('.CodeMirror').CodeMirror.getOption('extraKeys')"
+  },
+  {
+    "objectID": "codemirror-progression.html#the-solution",
+    "href": "codemirror-progression.html#the-solution",
+    "title": "CodeMirror cmd-/ Progression",
+    "section": "The Solution",
+    "text": "The Solution\nTo make cmd-/ work in a qmd file without Thebe:\n&lt;!-- Load CodeMirror --&gt;\n&lt;link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css\"&gt;\n&lt;script src=\"https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js\"&gt;&lt;/script&gt;\n&lt;script src=\"https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js\"&gt;&lt;/script&gt;\n&lt;script src=\"https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/comment/comment.min.js\"&gt;&lt;/script&gt;\n\n&lt;!-- Create textarea --&gt;\n&lt;textarea id=\"editor\"&gt;print(\"Hello\")&lt;/textarea&gt;\n\n&lt;!-- Initialize with extraKeys --&gt;\n&lt;script&gt;\nCodeMirror.fromTextArea(document.getElementById('editor'), {\n    extraKeys: {'Cmd-/': 'toggleComment', 'Ctrl-/': 'toggleComment'}\n});\n&lt;/script&gt;"
+  },
+  {
+    "objectID": "test-codemirror-static.html",
+    "href": "test-codemirror-static.html",
+    "title": "test",
+    "section": "",
+    "text": "Example 1: Basic Python Code\n            # This is a test comment\nprint(\"Hello, World!\")\nx = 5\ny = 10\nresult = x + y\nprint(f\"The sum is: {result}\")"
+  },
+  {
+    "objectID": "verify-translation.html",
+    "href": "verify-translation.html",
+    "title": "Translation Verification",
+    "section": "",
+    "text": "⏳ Loading translation page..."
+  },
+  {
+    "objectID": "verify-translation.html#step-1-theme-change-verification",
+    "href": "verify-translation.html#step-1-theme-change-verification",
+    "title": "Translation Verification",
+    "section": "",
+    "text": "⏳ Loading translation page..."
+  },
+  {
+    "objectID": "demo-eig.html",
+    "href": "demo-eig.html",
+    "title": "Question-asking based on Expected Information Gain (EIG)",
+    "section": "",
+    "text": "Inspired by: Rothe, A., Lake, B. M., & Gureckis, T. M. (2018). Do people ask good questions?. Computational Brain & Behavior, 1, 69-89.\nBob rolls a red die and a blue die. Alice gets to ask one yes-no question about the sum. What is the most informative question she could ask, in order to learn the most about the two die rolls? For example, is it better to ask if the sum is a perfect square, or if the sum is prime?\nWe’ll compute the EIG of various questions…\n\nfrom memo import memo\nimport jax\nimport jax.numpy as np\n\nis_prime  = np.array([0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0])\nis_square = np.array([1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0])\nis_pow_2  = np.array([0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0])\nQs = [\n    lambda n: n == 7,\n    lambda n: n == 12,\n    lambda n: n &gt; 10,\n    lambda n: n &gt; 8,\n    lambda n: n &gt; 6,\n    lambda n: n &gt; 5,\n    lambda n: n % 2 == 0,  # even??\n    lambda n: n % 2 == 1,  # odd??\n    lambda n: n % 3 == 0,\n    lambda n: n % 4 == 0,\n    lambda n: n % 5 == 0,\n    lambda n: is_prime[n],\n    lambda n: is_square[n],\n    lambda n: is_pow_2[n],\n]\n\nN = np.arange(1, 6 + 1)  # single die's outcomes\nQ = np.arange(len(Qs))   # questions\nA = np.array([0, 1])     # answers (yes/no)\n\n@jax.jit\ndef respond(q, a, n):\n    return np.array([q_(n) for q_ in Qs])[q] == a\n\n@memo\ndef eig[q: Q]():\n    alice: knows(q)\n    alice: thinks[\n        # bob rolls dice...\n        bob: chooses(n_red in N, wpp=1),\n        bob: chooses(n_blu in N, wpp=1),\n\n        # bob answers question...\n        bob: knows(q),\n        bob: chooses(a in A, wpp=respond(q, a, n_red + n_blu))\n    ]\n    alice: snapshots_self_as(future_self)\n\n    return alice[ imagine[\n        # if I were to get the answer...\n        future_self: observes [bob.a] is bob.a,\n        # EIG = entropy minus conditional entropy\n        H[bob.n_red, bob.n_blu] - E[future_self[ H[bob.n_red, bob.n_blu] ]]\n    ] ]\n\nz = eig()\n%timeit -r 10 -n 100 eig().block_until_ready()\n\n## print questions and EIGs in sorted order\nprint('EIG     Question')\nprint('---     ---')\nimport inspect\nq_names = [inspect.getsource(q_).strip()[10:-1] for q_ in Qs]\nfor eig_, q_ in reversed(sorted(list(zip(z, q_names)))):\n    print(f'{eig_:0.5f}', q_)"
+  },
+  {
+    "objectID": "minimal-with-thebe.html",
+    "href": "minimal-with-thebe.html",
+    "title": "Minimal with Thebe Integration",
+    "section": "",
+    "text": "This page attempts to use Thebe (like the main project files) but includes a fallback for when Thebe fails on localhost.\n\n\n\n\n\n\n\n\n\n    \n    \n        ⏳ Initializing...\n    \n\n\n\n\n    Test Editor: Click below and press Cmd-/ or Ctrl-/\n    # Test comment toggle with Thebe\nprint(\"Hello from Thebe!\")\nx = 42\ny = 58\nresult = x + y\nprint(f\"The answer is: {result}\")\n\n# Try selecting multiple lines\n# and pressing cmd-/\ndef test_function():\n    return \"Testing cmd-/\"\n\n\n\n    \n    // Test if cmd-/ is configured:\nwindow.testThebeIntegration()\n\n// Check all CodeMirror instances:\nwindow.checkAllInstances()\n\n// Force fallback initialization:\nwindow.forceFallback()"
+  },
+  {
+    "objectID": "minimal-with-thebe.html#integration-with-thebe",
+    "href": "minimal-with-thebe.html#integration-with-thebe",
+    "title": "Minimal with Thebe Integration",
+    "section": "",
+    "text": "This page attempts to use Thebe (like the main project files) but includes a fallback for when Thebe fails on localhost.\n\n\n\n\n\n\n\n\n\n    \n    \n        ⏳ Initializing...\n    \n\n\n\n\n    Test Editor: Click below and press Cmd-/ or Ctrl-/\n    # Test comment toggle with Thebe\nprint(\"Hello from Thebe!\")\nx = 42\ny = 58\nresult = x + y\nprint(f\"The answer is: {result}\")\n\n# Try selecting multiple lines\n# and pressing cmd-/\ndef test_function():\n    return \"Testing cmd-/\"\n\n\n\n    \n    // Test if cmd-/ is configured:\nwindow.testThebeIntegration()\n\n// Check all CodeMirror instances:\nwindow.checkAllInstances()\n\n// Force fallback initialization:\nwindow.forceFallback()"
+  },
+  {
+    "objectID": "minimal-with-thebe.html#how-this-works",
+    "href": "minimal-with-thebe.html#how-this-works",
+    "title": "Minimal with Thebe Integration",
+    "section": "How This Works",
+    "text": "How This Works\n\nIncludes Thebe via include-after-body: includes/thebe.html\nMonitors for Thebe initialization - waits up to 10 seconds\nTests if cmd-/ is configured when CodeMirror instances are found\nFalls back to direct initialization if Thebe fails\nCan fix Thebe instances that are missing cmd-/ configuration"
+  },
+  {
+    "objectID": "minimal-with-thebe.html#expected-behavior",
+    "href": "minimal-with-thebe.html#expected-behavior",
+    "title": "Minimal with Thebe Integration",
+    "section": "Expected Behavior",
+    "text": "Expected Behavior\n\nOn deployed sites: Thebe initializes → cmd-/ works via Thebe config\nOn localhost: Thebe fails → Fallback initializes → cmd-/ still works"
+  },
+  {
     "objectID": "demo-scalar-implicature.html",
     "href": "demo-scalar-implicature.html",
     "title": "Scalar Implicature",
@@ -49,17 +273,80 @@
     "text": "from memo import memo\nimport jax\nimport jax.numpy as np\nfrom enum import IntEnum\n\n## Scalar implicature\n\nNN = 10_000\n\nN = np.arange(NN + 1)  # number of nice people\nclass U(IntEnum):\n    NONE = 0\n    SOME = 1\n    ALL = 2\n\n@jax.jit\ndef meaning(n, u):  # (none)  (some)  (all)\n    return np.array([ n == 0, n &gt; 0, n == NN ])[u]\n\n@memo\ndef scalar[n: N, u: U]():\n    listener: thinks[\n        speaker: chooses(n in N, wpp=1),\n        speaker: chooses(u in U, wpp=imagine[\n            listener: knows(u),\n            listener: chooses(n in N, wpp=meaning(n, u)),\n            Pr[listener.n == n]\n        ])\n    ]\n    listener: observes [speaker.u] is u\n    listener: chooses(n in N, wpp=E[speaker.n == n])\n    return Pr[listener.n == n]\n\nscalar()  # warm up JIT\n\nimport time\nt_s = time.time()\nscalar()\nprint(time.time() - t_s)"
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "memo",
+    "objectID": "rsa.html",
+    "href": "rsa.html",
+    "title": "RSA",
     "section": "",
-    "text": "from memo import memo\nimport jax\nimport jax.numpy as np\nfrom enum import IntEnum\n\nprint(jax.__version__)\n\n\nSuggested demos\n\nScalar Implicature\nQuestion-asking via expected information gain\nPlanning and inverse-planning in an MDP\n\n\n\n\nmemo resources\n\nmemo GitHub Repo\nThe memo handbook\nGitHub Discussions - To ask questions about memo, and to get help from other memo users.\nMailing list - For updates on memo’s development."
+    "text": "from memo import memo\nimport jax\nimport jax.numpy as np\nfrom enum import IntEnum\n\nprint(jax.__version__)\n\nclass U(IntEnum):  # utterance space\n    GREEN  = 0\n    PINK   = 1\n    SQUARE = 2\n    ROUND  = 3\n\nclass R(IntEnum):  # referent space\n    GREEN_SQUARE = 0\n    GREEN_CIRCLE = 1\n    PINK_CIRCLE  = 2\n\n@jax.jit\ndef denotes(u, r):\n    return np.array([\n    #    green square\n    #    |  green circle\n    #    |  |  pink circle\n    #    |  |  |\n        [1, 1, 0],  # \"green\"\n        [0, 0, 1],  # \"pink\"\n        [1, 0, 0],  # \"square\"\n        [0, 1, 1]   # \"round\"\n    ])[u, r]\n\n\n@memo\ndef L[u: U, r: R](beta, t):\n    listener: thinks[\n        speaker: given(r in R, wpp=1),\n        speaker: chooses(u in U, wpp=\n            denotes(u, r) * (1 if t == 0 else exp(beta * L[u, r](beta, t - 1))))\n    ]\n    listener: observes [speaker.u] is u\n    listener: chooses(r in R, wpp=Pr[speaker.r == r])\n    return Pr[listener.r == r]\n\nbeta = 1.\nprint(L(beta, 0))\nprint(L(beta, 1))\n\n\n## Fitting the model to data...\nY = np.array([65, 115, 0]) / 180  # data from Qing & Franke 2015\n@jax.jit\ndef loss(beta):\n    return np.mean((L(beta, 1)[0] - Y) ** 2)\n\nfrom matplotlib import pyplot as plt\nplt.figure(figsize=(5, 4))\n\n## Fitting by gradient descent!\nvg = jax.value_and_grad(loss)\nlosses = []\nbeta = 0.\nfor _ in range(26):\n    l, dbeta = vg(beta)\n    losses.append(l)\n    beta = beta - dbeta * 12.\nplt.plot(np.arange(len(losses)), losses)\nplt.ylabel('MSE (%)')\nplt.xlabel('Step #')\nplt.yticks([0, 0.02], [0, 2])\nplt.title('Gradient descent')\n\nplt.tight_layout()"
   },
   {
-    "objectID": "demo-mdp.html",
-    "href": "demo-mdp.html",
-    "title": "MDP planning and inverse planning",
+    "objectID": "game23.html#memo-models-are-decorated-functions",
+    "href": "game23.html#memo-models-are-decorated-functions",
+    "title": "2/3rds Game",
+    "section": "memo models are decorated functions",
+    "text": "memo models are decorated functions\n\nfrom memo import memo\n\nX = [1, 2, 3]\nY = range(10)\n\n@memo\ndef my_model[x: X, y: Y](a, b=2, c=None):\n    return x + y\n\nmy_model(1, b=2, c=3)\n\n\nYou can convert the output array into an pandas DataFrame or an xarray for easy indexing:\n\nres = my_model(1, b=2, c=3, \n                        return_aux=True, \n                        return_pandas=True, \n                        return_xarray=True)\ndata = res.data\ndf = res.aux.pandas\nxa = res.aux.xarray\nprint(f\"===JAX array===\"); print(data)\nprint(f\"\\n===pandas===\"); print(df.head())\nprint(f\"\\n===xarray===\"); print(xa)\n\n\nchooses()\n\nimport jax.numpy as np\n\nZ = np.arange(100) + 1\n\n@memo\ndef my_model[z: Z]():\n    kartik: chooses(z in Z, wpp=1)\n    return E[kartik.z == z]\n\nmy_model()\n\n\n\nexpressions\n\nimport jax.numpy as np\n\nZ = np.arange(100) + 1\n\n@memo\ndef my_model[z: Z]():\n    kartik: chooses(z in Z, wpp=1)\n    return Pr[exp(kartik.z) &gt; 5]\n\nmy_model()\n\n\n\n@memo\ndef my_model[z: Z]():\n    kartik: chooses(z in Z, wpp=3 if z % 2 == 0 else 1)\n    return E[kartik.z == z]\n\nmy_model()\n\n\n\nfrom matplotlib import pyplot as plt\nimport jax\nfrom jax.scipy.stats.norm import pdf as normpdf\n\ngaussianpdf = jax.jit(normpdf)\n\n@memo\ndef my_model[z: Z]():\n    kartik: chooses(z in Z, wpp=gaussianpdf(z, 20, 5))\n    return E[kartik.z == z]\n\nplt.plot(Z, my_model())\n\n\n\nthinks[]\n\n@memo\ndef my_model[z: Z]():\n    kartik: thinks[\n        maxkw: chooses(z in Z, wpp=3 if z % 2 == 0 else 1)\n    ]\n    return kartik[ E[maxkw.z == 1]]\n\nmy_model()"
+  },
+  {
+    "objectID": "test-codemirror-hybrid.html",
+    "href": "test-codemirror-hybrid.html",
+    "title": "CodeMirror Hybrid Test",
     "section": "",
-    "text": "In this notebook we will set up a simple grid-world, plan routes to goals, and infer goals given actions.\n\nfrom functools import cache\nimport jax\nimport jax.numpy as np\nimport matplotlib.pyplot as plt\nfrom memo import memo\n\nH = 21\nW = 21\nS = np.arange(H * W)  # state space\nG = np.array([0, H * W - 1])  # possible goals: NW and SE corners\n\nA = np.array([0, 1, 2, 3])  # action space: left, right, up, down\ncoord_actions = np.array([[-1, 0], [+1, 0], [0, -1], [0, +1]])\n\nmaze_raw = np.array(1 - plt.imread('src/assets/img/logo-maze.png'), dtype=int)\nmaze = maze_raw.reshape(-1)\nassert maze_raw.size == H * W\n\n# # Alternatively...\n# maze = np.zeros(H * W)  # blank maze\n\n# transition function: P(s_ | s, a)\n@jax.jit\ndef Tr(s, a, s_):\n    x, y = s % W, s // W\n    next_coords = np.array([x, y]) + coord_actions[a]\n    next_state = (\n        + 1 * np.clip(next_coords[0], 0, W - 1)\n        + W * np.clip(next_coords[1], 0, H - 1)\n    )\n    return (\n        + 1.0 * ((maze[next_state] == 0) & (next_state == s_))  # next state free, can move there\n        + 1.0 * ((maze[next_state] == 1) & (s == s_)) # next state occupied, stay where you are\n    )\n\n# reward function\n@jax.jit\ndef R(s, a, g):\n    return 1.0 * (s == g) - 0.1\n\n@jax.jit\ndef is_terminating(s, g):\n    return s == g\n\n# discount factor\n@jax.jit\ndef gamma():\n    return 1.0\n\nprint('loaded!')\n\nWe can plan via Q-value iteration and inverse-plan by inferring \\(P(g \\mid s, a)\\) where \\(P(a \\mid s, g)\\) is given by a softmax over Q-value with \\(\\beta=2\\).\n\n@cache\n@memo\ndef Q[s: S, a: A, g: G](t):\n    alice: knows(s, a, g)\n    alice: given(s_ in S, wpp=Tr(s, a, s_))\n    alice: chooses(a_ in A, to_maximize=0.0 if t &lt; 0 else Q[s_, a_, g](t - 1))\n    return E[\n        R(s, a, g) + (0.0 if t &lt; 0 else\n                      0.0 if is_terminating(s, g) else\n                      gamma() * Q[alice.s_, alice.a_, g](t - 1))\n    ]\n\n@memo\ndef invplan[s: S, a: A, g: G](t):\n    observer: knows(a, s, g)\n    observer: thinks[\n        alice: chooses(g in G, wpp=1),\n        alice: knows(s),\n        alice: chooses(a in A, wpp=exp(2 * Q[s, a, g](t))),\n    ]\n    observer: observes [alice.a] is a\n    return observer[E[alice.g == g]]\n\nQ(0)  # pre-compile Q\nprint(\"starting...\")\nip = invplan(100)\nv = Q(100).max(axis=1)\nprint(\"done!\")\n\nThis is already pretty fast, though it is even faster on a GPU.\nFinally, let’s make the plots shown in the paper.\n\nplt.figure(figsize=(3, 3))\n\nplt.subplot(2, 2, 1)\nplt.imshow((v[:, 0].reshape(H, W)))\nplt.imshow(1 - maze_raw, cmap='gray', alpha=1. * maze_raw)\nplt.plot([0], [0], 'r*')\nplt.plot([20], [20], 'b*')\nplt.xticks([]); plt.yticks([])\nplt.title('(a)')\n\nplt.subplot(2, 2, 2)\nplt.imshow((v[:, 1].reshape(H, W)))\nplt.imshow(1 - maze_raw, cmap='gray', alpha=1. * maze_raw)\nplt.xticks([]); plt.yticks([])\nplt.plot([0], [0], 'r*')\nplt.plot([20], [20], 'b*')\nplt.title('(b)')\n\ndip = ip[:, :, 0] - ip[:, :, 1]\nplt.subplot(2, 2, 3)\nplt.imshow(dip[:, 0].reshape(H, W), cmap='bwr', vmin=-1, vmax=+1)\nplt.imshow(1 - maze_raw, cmap='gray', alpha=1. * maze_raw)\nplt.xticks([]); plt.yticks([])\nplt.plot([0], [0], 'r*')\nplt.plot([20], [20], 'b*')\nplt.title('(c)')\n\nplt.subplot(2, 2, 4)\nplt.imshow(dip[:, 3].reshape(H, W), cmap='bwr', vmin=-1, vmax=+1)\nplt.imshow(1 - maze_raw, cmap='gray', alpha=1. * maze_raw)\nplt.xticks([]); plt.yticks([])\nplt.plot([0], [0], 'r*')\nplt.plot([20], [20], 'b*')\nplt.title('(d)')\n\nplt.tight_layout()"
+    "text": "This page attempts to use Thebe but falls back to direct CodeMirror initialization if Thebe fails (e.g., on localhost).\n\n\n\n\n\n\n\n\n\n\n    \n    \n        ⏳ Initializing...\n    \n\n\n\n    Test Editor\n    # Test comment toggle with cmd-/\nprint(\"Hello, World!\")\nx = 5\ny = 10\nresult = x + y\nprint(f\"The sum is: {result}\")\n\ndef test_function():\n    # This is a comment\n    return \"Testing cmd-/\"\n    \n# Try selecting multiple lines and pressing cmd-/"
+  },
+  {
+    "objectID": "test-codemirror-hybrid.html#hybrid-codemirror-test",
+    "href": "test-codemirror-hybrid.html#hybrid-codemirror-test",
+    "title": "CodeMirror Hybrid Test",
+    "section": "",
+    "text": "This page attempts to use Thebe but falls back to direct CodeMirror initialization if Thebe fails (e.g., on localhost).\n\n\n\n\n\n\n\n\n\n\n    \n    \n        ⏳ Initializing...\n    \n\n\n\n    Test Editor\n    # Test comment toggle with cmd-/\nprint(\"Hello, World!\")\nx = 5\ny = 10\nresult = x + y\nprint(f\"The sum is: {result}\")\n\ndef test_function():\n    # This is a comment\n    return \"Testing cmd-/\"\n    \n# Try selecting multiple lines and pressing cmd-/"
+  },
+  {
+    "objectID": "test-codemirror-hybrid.html#testing-instructions",
+    "href": "test-codemirror-hybrid.html#testing-instructions",
+    "title": "CodeMirror Hybrid Test",
+    "section": "Testing Instructions",
+    "text": "Testing Instructions\nThis page will automatically: 1. Try to initialize CodeMirror via Thebe 2. Fall back to direct initialization if Thebe fails (e.g., on localhost) 3. Run automated tests to verify cmd-/ functionality\n\nManual Testing\n\nWait for initialization to complete\nClick in the editor\nPress Cmd-/ (Mac) or Ctrl-/ (Windows/Linux)\nLines should toggle between commented/uncommented\n\n\n\nConsole Testing\n// Get test results\nwindow.cmTest.test()\n\n// Check initialization mode\nwindow.cmTest.mode\n\n// Access CodeMirror instance\nwindow.cmTest.instance"
+  },
+  {
+    "objectID": "test.html#testing-kernel-file-access",
+    "href": "test.html#testing-kernel-file-access",
+    "title": "Thebe Kernel File Access Test",
+    "section": "Testing Kernel File Access",
+    "text": "Testing Kernel File Access\nThis notebook helps debug what files the Thebe kernel can access.\n\nCurrent Working Directory\n\nimport os\nprint(\"Current working directory:\", os.getcwd())\n\n\n\nList Files in Current Directory\n\nimport os\nfiles = os.listdir('.')\nprint(f\"Files in current directory ({len(files)} total):\")\nfor f in sorted(files)[:20]:  # Show first 20 files\n    print(f\"  - {f}\")\nif len(files) &gt; 20:\n    print(f\"  ... and {len(files) - 20} more files\")\n\n\n\nCheck for Common Directories\n\nimport os\n\ndirs_to_check = [\n    'src',\n    'src/assets',\n    'src/assets/img',\n    'assets',\n    'assets/img',\n    'demos',\n    'demos/assets',\n    '../assets',\n    '../src',\n    '.'\n]\n\nprint(\"Checking for directories:\")\nfor dir_path in dirs_to_check:\n    exists = os.path.exists(dir_path)\n    is_dir = os.path.isdir(dir_path) if exists else False\n    print(f\"  {dir_path:&lt;20} exists: {exists:&lt;5} is_dir: {is_dir}\")\n\n\n\nCheck for the Logo Maze Image\n\nimport os\n\nimage_paths = [\n    'src/assets/img/logo-maze.png',\n    'assets/img/logo-maze.png',\n    'logo-maze.png',\n    '../assets/img/logo-maze.png',\n    'src/demos/assets/logo-maze.png',  # Old path\n    'demos/assets/logo-maze.png'\n]\n\nprint(\"Checking for logo-maze.png:\")\nfor path in image_paths:\n    exists = os.path.exists(path)\n    print(f\"  {path:&lt;40} exists: {exists}\")\n    if exists:\n        print(f\"    -&gt; Full path: {os.path.abspath(path)}\")\n\n\n\nList Files in src Directory (if it exists)\n\nimport os\n\nif os.path.exists('src') and os.path.isdir('src'):\n    print(\"Contents of 'src' directory:\")\n    for root, dirs, files in os.walk('src'):\n        level = root.replace('src', '').count(os.sep)\n        indent = ' ' * 2 * level\n        print(f'{indent}{os.path.basename(root)}/')\n        subindent = ' ' * 2 * (level + 1)\n        for file in files[:5]:  # Limit files shown per directory\n            print(f'{subindent}{file}')\n        if len(files) &gt; 5:\n            print(f'{subindent}... and {len(files) - 5} more files')\nelse:\n    print(\"'src' directory not found\")\n\n\n\nPython Path and Module Search Paths\n\nimport sys\nprint(\"Python executable:\", sys.executable)\nprint(\"\\nPython path (sys.path):\")\nfor i, path in enumerate(sys.path[:10]):  # Show first 10 paths\n    print(f\"  {i}: {path}\")\nif len(sys.path) &gt; 10:\n    print(f\"  ... and {len(sys.path) - 10} more paths\")\n\n\n\nEnvironment Variables\n\nimport os\nenv_vars = ['HOME', 'PWD', 'JUPYTER_PATH', 'PATH']\nprint(\"Relevant environment variables:\")\nfor var in env_vars:\n    value = os.environ.get(var, 'Not set')\n    if var == 'PATH' and value != 'Not set':\n        # Show only first few PATH entries\n        paths = value.split(':')\n        print(f\"  {var}: {paths[0]}\")\n        for p in paths[1:3]:\n            print(f\"       {p}\")\n        if len(paths) &gt; 3:\n            print(f\"       ... and {len(paths) - 3} more paths\")\n    else:\n        print(f\"  {var}: {value}\")\n\n\n\nAttempting to Load the Image\n\nimport matplotlib.pyplot as plt\nimport numpy as np\n\n# Try different paths\npaths_to_try = [\n    'src/assets/img/logo-maze.png',\n    'assets/img/logo-maze.png',\n    './src/assets/img/logo-maze.png'\n]\n\nfor path in paths_to_try:\n    try:\n        img = plt.imread(path)\n        print(f\"✓ Successfully loaded image from: {path}\")\n        print(f\"  Image shape: {img.shape}\")\n        break\n    except FileNotFoundError:\n        print(f\"✗ Could not load from: {path}\")\n    except Exception as e:\n        print(f\"✗ Error loading {path}: {type(e).__name__}: {e}\")"
+  },
+  {
+    "objectID": "test-comment-functionality.html",
+    "href": "test-comment-functionality.html",
+    "title": "Comment Toggle Test Suite",
+    "section": "",
+    "text": "⏳ Waiting for Thebe to initialize..."
+  },
+  {
+    "objectID": "test-comment-functionality.html#automated-test-results",
+    "href": "test-comment-functionality.html#automated-test-results",
+    "title": "Comment Toggle Test Suite",
+    "section": "",
+    "text": "⏳ Waiting for Thebe to initialize..."
+  },
+  {
+    "objectID": "test-comment-functionality.html#manual-test-instructions",
+    "href": "test-comment-functionality.html#manual-test-instructions",
+    "title": "Comment Toggle Test Suite",
+    "section": "Manual Test Instructions",
+    "text": "Manual Test Instructions\nAfter Thebe initializes, test the comment toggle functionality:\n\nClick in any code editor below\nPress Cmd-/ (Mac) or Ctrl-/ (Windows/Linux)\nThe current line should toggle between commented/uncommented\nSelect multiple lines and press the shortcut to toggle all selected lines"
+  },
+  {
+    "objectID": "test-comment-functionality.html#test-editors",
+    "href": "test-comment-functionality.html#test-editors",
+    "title": "Comment Toggle Test Suite",
+    "section": "Test Editors",
+    "text": "Test Editors\n\nPython Code Example\n# This is a test comment\nprint(\"Hello World\")\nx = 5\ny = 10\nresult = x + y\nprint(f\"The sum is: {result}\")\n\n\nMulti-line Test\ndef calculate_average(numbers):\n    if not numbers:\n        return 0\n    total = sum(numbers)\n    count = len(numbers)\n    average = total / count\n    return average\n\n# Test the function\ntest_data = [10, 20, 30, 40, 50]\navg = calculate_average(test_data)\nprint(f\"Average: {avg}\")\n\n\nMixed Comments Test\n# This line is already commented\nprint(\"This line is not commented\")\n# Another comment here\nvalue = 42\nprint(f\"Value: {value}\")  # Inline comment\n# Final comment"
+  },
+  {
+    "objectID": "test-comment-functionality.html#console-commands",
+    "href": "test-comment-functionality.html#console-commands",
+    "title": "Comment Toggle Test Suite",
+    "section": "Console Commands",
+    "text": "Console Commands\nOpen the browser console and run these commands to test:\n// Quick test\nwindow.quickCommentTest()\n\n// Detailed test\nwindow.testCommentToggle()\n\n// Check specific instance\ndocument.querySelector('.CodeMirror').CodeMirror.getOption('extraKeys')"
   }
 ]

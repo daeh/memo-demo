@@ -1,0 +1,249 @@
+---
+title: "CodeMirror Direct Test (No Thebe)"
+page-layout: full
+sidebar: false
+toc: false
+---
+
+## Testing cmd-/ without Thebe
+
+This page initializes CodeMirror directly without relying on Thebe, allowing us to test the comment toggle functionality.
+
+```{=html}
+<!-- CodeMirror CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/neo.min.css">
+
+<!-- CodeMirror JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/comment/comment.min.js"></script>
+
+<style>
+.editor-wrapper {
+    margin: 20px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.editor-title {
+    background: #f0f0f0;
+    padding: 8px 15px;
+    font-weight: bold;
+    font-size: 14px;
+    border-bottom: 1px solid #ddd;
+}
+.CodeMirror {
+    height: auto;
+    min-height: 100px;
+}
+.test-status {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f0f8ff;
+    border: 1px solid #4a90e2;
+    border-radius: 4px;
+}
+.test-result {
+    margin: 10px 0;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    font-family: monospace;
+}
+</style>
+
+<div class="test-status">
+    <h3>Automated Test Results</h3>
+    <div id="auto-test-results">
+        <p>⏳ Initializing CodeMirror and running tests...</p>
+    </div>
+</div>
+
+<div class="editor-wrapper">
+    <div class="editor-title">Test Editor 1: Basic Python Code</div>
+    <textarea id="editor1"># This is a test comment
+print("Hello, World!")
+x = 5
+y = 10
+result = x + y
+print(f"The sum is: {result}")</textarea>
+</div>
+
+<div class="editor-wrapper">
+    <div class="editor-title">Test Editor 2: Function Example</div>
+    <textarea id="editor2">def calculate_average(numbers):
+    # Check if list is empty
+    if not numbers:
+        return 0
+    
+    total = sum(numbers)
+    count = len(numbers)
+    return total / count
+
+# Test the function
+test_data = [10, 20, 30, 40, 50]
+avg = calculate_average(test_data)
+print(f"Average: {avg}")</textarea>
+</div>
+
+<div class="test-result" id="manual-test-log">
+    <strong>Manual Test Log:</strong> Press Cmd-/ or Ctrl-/ in the editors above
+</div>
+
+<script>
+// Initialize CodeMirror instances
+let testResults = {
+    initialization: false,
+    extraKeysConfigured: false,
+    commandAvailable: false,
+    toggleFunctional: false
+};
+
+function initializeCodeMirror() {
+    try {
+        const editors = [];
+        
+        // Initialize editors
+        ['editor1', 'editor2'].forEach((id, index) => {
+            const textarea = document.getElementById(id);
+            if (!textarea) {
+                console.error(`Textarea ${id} not found`);
+                return;
+            }
+            
+            const editor = CodeMirror.fromTextArea(textarea, {
+                mode: 'python',
+                theme: 'neo',
+                lineNumbers: true,
+                indentUnit: 4,
+                extraKeys: {
+                    'Cmd-/': 'toggleComment',
+                    'Ctrl-/': 'toggleComment'
+                }
+            });
+            
+            editors.push(editor);
+            
+            // Track when comment is toggled
+            editor.on('keyHandled', (cm, name, event) => {
+                if (name === 'Cmd-/' || name === 'Ctrl-/') {
+                    const logDiv = document.getElementById('manual-test-log');
+                    logDiv.innerHTML = `<strong>✅ Success!</strong> Comment toggled in Editor ${index + 1} at ${new Date().toLocaleTimeString()}`;
+                    testResults.toggleFunctional = true;
+                    updateTestResults();
+                }
+            });
+        });
+        
+        testResults.initialization = editors.length > 0;
+        
+        // Run automated tests
+        if (editors.length > 0) {
+            runAutomatedTests(editors[0]);
+        }
+        
+    } catch (error) {
+        console.error('Error initializing CodeMirror:', error);
+        document.getElementById('auto-test-results').innerHTML = 
+            `<p style="color: red;">❌ Error: ${error.message}</p>`;
+    }
+}
+
+function runAutomatedTests(editor) {
+    console.log('Running automated tests...');
+    
+    // Test 1: Check if comment command is available
+    testResults.commandAvailable = typeof CodeMirror.commands.toggleComment === 'function';
+    
+    // Test 2: Check if extraKeys are configured
+    const extraKeys = editor.getOption('extraKeys');
+    testResults.extraKeysConfigured = extraKeys && 
+        extraKeys['Cmd-/'] === 'toggleComment' && 
+        extraKeys['Ctrl-/'] === 'toggleComment';
+    
+    // Test 3: Try to programmatically toggle comment
+    try {
+        const cursor = editor.getCursor();
+        const lineBefore = editor.getLine(cursor.line);
+        
+        // Execute toggle comment
+        CodeMirror.commands.toggleComment(editor);
+        const lineAfter = editor.getLine(cursor.line);
+        
+        // Check if line changed (comment was toggled)
+        if (lineBefore !== lineAfter) {
+            testResults.toggleFunctional = true;
+            // Toggle back
+            CodeMirror.commands.toggleComment(editor);
+        }
+    } catch (error) {
+        console.error('Error testing toggle:', error);
+    }
+    
+    updateTestResults();
+}
+
+function updateTestResults() {
+    const resultsDiv = document.getElementById('auto-test-results');
+    
+    const allPassed = Object.values(testResults).every(v => v === true);
+    
+    let html = '<table style="width: 100%; font-family: monospace;">';
+    html += '<tr><th style="text-align: left;">Test</th><th style="text-align: left;">Result</th></tr>';
+    html += `<tr><td>CodeMirror Initialized</td><td>${testResults.initialization ? '✅ Pass' : '❌ Fail'}</td></tr>`;
+    html += `<tr><td>Comment Command Available</td><td>${testResults.commandAvailable ? '✅ Pass' : '❌ Fail'}</td></tr>`;
+    html += `<tr><td>ExtraKeys Configured</td><td>${testResults.extraKeysConfigured ? '✅ Pass' : '❌ Fail'}</td></tr>`;
+    html += `<tr><td>Toggle Functional</td><td>${testResults.toggleFunctional ? '✅ Pass' : '❌ Fail'}</td></tr>`;
+    html += '</table>';
+    
+    if (allPassed) {
+        html += '<p style="color: green; font-weight: bold; margin-top: 10px;">✅ All tests passed! cmd-/ is working correctly.</p>';
+    } else {
+        html += '<p style="color: orange; font-weight: bold; margin-top: 10px;">⚠️ Some tests failed. Check the results above.</p>';
+    }
+    
+    resultsDiv.innerHTML = html;
+    
+    // Log to console for debugging
+    console.log('Test Results:', testResults);
+    
+    // Create global function for manual testing
+    window.verifyCommentToggle = function() {
+        console.log('Comment Toggle Test Results:', testResults);
+        return testResults;
+    };
+}
+
+// Wait for DOM to be ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeCodeMirror);
+} else {
+    // DOM is already ready
+    setTimeout(initializeCodeMirror, 100);
+}
+</script>
+```
+
+## Manual Testing Instructions
+
+1. The editors above are initialized with CodeMirror directly (no Thebe required)
+2. Click in either editor
+3. Press **Cmd-/** (Mac) or **Ctrl-/** (Windows/Linux)
+4. The current line should toggle between commented/uncommented
+5. The test log will update when you successfully use the shortcut
+
+## Console Commands
+
+Open the browser console and run:
+
+```javascript
+// Check test results
+window.verifyCommentToggle()
+
+// Check first editor configuration
+document.querySelector('.CodeMirror').CodeMirror.getOption('extraKeys')
+
+// Manually trigger comment toggle
+CodeMirror.commands.toggleComment(document.querySelector('.CodeMirror').CodeMirror)
+```

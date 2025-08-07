@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="">
+<meta name="author" content="Memo Team">
 
-<title>memo – Memo Demo</title>
+<title>Translation Verification – Memo Demo</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,41 +20,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -103,66 +68,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 <style>html{ scroll-behavior: smooth; }</style>
-<!-- Font Awesome for ipywidgets icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg==" crossorigin="anonymous">
-
-<!-- Thebe CSS -->
-<link rel="stylesheet" href="assets/styles/thebe.css">
-
-<!-- Custom Navbar CSS -->
-<link rel="stylesheet" href="assets/styles/custom-navbar.css">
-
-<!-- Thebe Configuration (MUST be loaded before Thebe library) -->
-<script type="text/x-thebe-config">
-  {
-    "requestKernel": true,
-    "binderOptions": {
-      "repo": "daeh/memo-demo",
-      "ref": "main",
-      "binderUrl": "https://mybinder.org"
-    },
-    "kernelOptions": {
-      "kernelName": "python3"
-    },
-    "selector": "[data-executable=\"true\"]",
-    "mountRunButton": true,
-    "mountRunAllButton": false,
-    "mountRestartButton": false,
-    "mountRestartAllButton": false,
-    "mountActivateWidget": false,
-    "mountStatusWidget": true,
-    "codeMirrorConfig": {
-      "theme": "default",
-      "lineNumbers": true,
-      "autoCloseBrackets": true,
-      "indentUnit": 4,
-      "indentWithTabs": false,
-      "smartIndent": true,
-      "extraKeys": {
-        "Cmd-/": "toggleComment",
-        "Ctrl-/": "toggleComment"
-      }
-    }
-  }
-</script>
-
-<!-- Load Thebe library (specific version for stability) -->
-<script src="https://unpkg.com/thebe@0.9.2/lib/index.js"></script>
-
-<!-- Custom Thebe initialization (loaded AFTER Thebe library) -->
-<script src="assets/js/thebe-config.js"></script>
-
-<!-- Custom Navbar JS -->
-<script src="assets/js/custom-navbar.js"></script>
 
 
 <link rel="stylesheet" href="assets/styles/styles.css">
-<link rel="stylesheet" href="assets/styles/custom.css">
-<meta property="og:title" content="memo – Memo Demo">
-<meta property="og:description" content="">
+<meta property="og:title" content="Translation Verification – Memo Demo">
 <meta property="og:site_name" content="Memo Demo">
-<meta name="twitter:title" content="memo – Memo Demo">
-<meta name="twitter:description" content="">
+<meta name="twitter:title" content="Translation Verification – Memo Demo">
 <meta name="twitter:card" content="summary">
 </head>
 
@@ -179,13 +90,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">memo</h1>
+<h1 class="title">Translation Verification</h1>
 </div>
 
 
 
 <div class="quarto-title-meta column-page">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Memo Team </p>
+          </div>
+  </div>
     
   
     
@@ -196,41 +113,78 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<!-- Thebe status widget mount point (hidden until moved to navbar) -->
-<div class="thebe-status" style="display: none;">
+<section id="step-1-theme-change-verification" class="level2">
+<h2 class="anchored" data-anchor-id="step-1-theme-change-verification">Step 1: Theme Change Verification</h2>
+<style>
+    .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+    .success { background: #d4edda; color: #155724; }
+    .error { background: #f8d7da; color: #721c24; }
+    iframe { width: 100%; height: 600px; border: 1px solid #ccc; }
+</style>
 
+<div id="results">
+    <div class="status">⏳ Loading translation page...</div>
 </div>
-<div id="6c66b058" class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> memo <span class="im">import</span> memo</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax.numpy <span class="im">as</span> np</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> enum <span class="im">import</span> IntEnum</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(jax.__version__)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<section id="suggested-demos" class="level3">
-<h3 class="anchored" data-anchor-id="suggested-demos">Suggested demos</h3>
-<ul>
-<li><p><a href="./demo-scalar-implicature.html">Scalar Implicature</a></p></li>
-<li><p><a href="./demo-eig.html">Question-asking via expected information gain</a></p></li>
-<li><p><a href="./demo-mdp.html">Planning and inverse-planning in an MDP</a></p></li>
-</ul>
-<!-- 
-- [Scalar Implicature](https://github.com/kach/memo/blob/main/demo/demo-scalar.py)
 
-- [Question-asking via expected information gain](https://github.com/kach/memo/blob/main/demo/demo-eig.ipynb)
+<h2 class="anchored">Translation Page:</h2>
+<iframe src="test-codemirror-static-html-translate.html" onload="checkIframe()"></iframe>
 
-- [Planning and inverse-planning in an MDP](https://github.com/kach/memo/blob/main/demo/demo-mdp.ipynb) 
--->
-</section>
-<section id="memo-resources" class="level3">
-<h3 class="anchored" data-anchor-id="memo-resources"><code>memo</code> resources</h3>
-<ul>
-<li><p><a href="https://github.com/kach/memo"><code>memo</code> GitHub Repo</a></p></li>
-<li><p><a href="https://github.com/kach/memo/blob/main/Handbook.pdf">The <code>memo</code> handbook</a></p></li>
-<li><p><a href="https://github.com/kach/memo/discussions">GitHub Discussions</a> - To ask questions about memo, and to get help from other memo users.</p></li>
-<li><p><a href="https://lists.csail.mit.edu/mailman/listinfo/memo-lang">Mailing list</a> - For updates on memo’s development.</p></li>
-</ul>
+<script>
+function checkIframe() {
+    const iframe = document.querySelector('iframe');
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    
+    setTimeout(() => {
+        const results = document.getElementById('results');
+        let html = '';
+        
+        // Check if CodeMirror is loaded
+        const cm = iframeDoc.querySelector('.CodeMirror');
+        if (cm && cm.CodeMirror) {
+            html += '<div class="status success">✅ CodeMirror loaded successfully</div>';
+            
+            // Check theme
+            const theme = cm.CodeMirror.getOption('theme');
+            if (theme === 'default') {
+                html += '<div class="status success">✅ Theme is "default" (matches qmd files)</div>';
+            } else {
+                html += '<div class="status error">❌ Theme is "' + theme + '" (should be "default")</div>';
+            }
+            
+            // Check extraKeys
+            const extraKeys = cm.CodeMirror.getOption('extraKeys');
+            if (extraKeys && extraKeys['Cmd-/'] === 'toggleComment') {
+                html += '<div class="status success">✅ cmd-/ is configured for toggleComment</div>';
+            } else {
+                html += '<div class="status error">❌ cmd-/ is not properly configured</div>';
+            }
+            
+            // Check if comment addon is available
+            if (iframe.contentWindow.CodeMirror && iframe.contentWindow.CodeMirror.commands.toggleComment) {
+                html += '<div class="status success">✅ Comment addon is loaded</div>';
+            } else {
+                html += '<div class="status error">❌ Comment addon not found</div>';
+            }
+        } else {
+            html += '<div class="status error">❌ CodeMirror not found</div>';
+        }
+        
+        results.innerHTML = html;
+    }, 1000);
+}
+
+// Also log for console testing
+window.testTranslation = function() {
+    const iframe = document.querySelector('iframe');
+    const cm = iframe.contentDocument.querySelector('.CodeMirror')?.CodeMirror;
+    if (cm) {
+        console.log('Theme:', cm.getOption('theme'));
+        console.log('ExtraKeys:', cm.getOption('extraKeys'));
+        return true;
+    }
+    return false;
+};
+</script>
 
 
 </section>

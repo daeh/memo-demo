@@ -1,0 +1,75 @@
+---
+title: "CodeMirror cmd-/ Progression"
+subtitle: "From working HTML to minimal QMD"
+page-layout: full
+sidebar: false
+toc: false
+---
+
+## Summary: cmd-/ Works in QMD Files!
+
+We've successfully created minimal qmd files where cmd-/ works for comment toggling. Here's the progression:
+
+### 1. Original Working HTML
+- **URL**: [test-codemirror-static-html.html](test-codemirror-static-html.html)
+- **Theme**: neo
+- **Method**: Direct HTML file
+- **cmd-/ Status**: ✅ **WORKS**
+
+### 2. Translation (Theme Change)
+- **URL**: [test-codemirror-static-html-translate.html](test-codemirror-static-html-translate.html)
+- **Theme**: default (matches qmd files)
+- **Method**: Direct HTML file
+- **cmd-/ Status**: ✅ **WORKS**
+
+### 3. Minimal QMD File
+- **URL**: [minimal-codemirror.html](minimal-codemirror.html)
+- **Theme**: default
+- **Method**: QMD file with direct CodeMirror initialization
+- **cmd-/ Status**: ✅ **WORKS**
+
+### 4. Ultra-Minimal QMD File
+- **URL**: [ultra-minimal-codemirror.html](ultra-minimal-codemirror.html)
+- **Theme**: default
+- **Method**: Bare minimum QMD file
+- **cmd-/ Status**: ✅ **WORKS**
+
+## Key Finding
+
+**QMD files CAN have working cmd-/ functionality!** The issue with the existing qmd files is that they rely on Thebe for CodeMirror initialization, and Thebe fails on localhost due to CORS.
+
+## Test It Yourself
+
+1. Open any of the links above
+2. Click in the code editor
+3. Press **Cmd-/** (Mac) or **Ctrl-/** (Windows/Linux)
+4. The line will toggle between commented/uncommented
+
+### Console Test
+
+On any of the CodeMirror pages, run:
+```javascript
+document.querySelector('.CodeMirror').CodeMirror.getOption('extraKeys')
+```
+
+## The Solution
+
+To make cmd-/ work in a qmd file without Thebe:
+
+```html
+<!-- Load CodeMirror -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/comment/comment.min.js"></script>
+
+<!-- Create textarea -->
+<textarea id="editor">print("Hello")</textarea>
+
+<!-- Initialize with extraKeys -->
+<script>
+CodeMirror.fromTextArea(document.getElementById('editor'), {
+    extraKeys: {'Cmd-/': 'toggleComment', 'Ctrl-/': 'toggleComment'}
+});
+</script>
+```

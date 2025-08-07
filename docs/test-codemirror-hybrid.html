@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="">
+<meta name="author" content="Memo Team">
 
-<title>2/3rds Game – Memo Demo</title>
+<title>CodeMirror Hybrid Test – Memo Demo</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -103,6 +103,311 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 <style>html{ scroll-behavior: smooth; }</style>
+
+
+<link rel="stylesheet" href="assets/styles/styles.css">
+<meta property="og:title" content="CodeMirror Hybrid Test – Memo Demo">
+<meta property="og:description" content="Testing cmd-/ with fallback to direct initialization">
+<meta property="og:site_name" content="Memo Demo">
+<meta name="twitter:title" content="CodeMirror Hybrid Test – Memo Demo">
+<meta name="twitter:description" content="Testing cmd-/ with fallback to direct initialization">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-search-results"></div>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content column-page" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">CodeMirror Hybrid Test</h1>
+<p class="subtitle lead">Testing cmd-/ with fallback to direct initialization</p>
+</div>
+
+
+
+<div class="quarto-title-meta column-page">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Memo Team </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="hybrid-codemirror-test" class="level2">
+<h2 class="anchored" data-anchor-id="hybrid-codemirror-test">Hybrid CodeMirror Test</h2>
+<p>This page attempts to use Thebe but falls back to direct CodeMirror initialization if Thebe fails (e.g., on localhost).</p>
+<!-- Additional CodeMirror resources as fallback -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/neo.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/comment/comment.min.js"></script>
+
+<style>
+.test-status {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f0f8ff;
+    border: 1px solid #4a90e2;
+    border-radius: 4px;
+}
+.editor-wrapper {
+    margin: 20px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.editor-title {
+    background: #f0f0f0;
+    padding: 8px 15px;
+    font-weight: bold;
+    font-size: 14px;
+    border-bottom: 1px solid #ddd;
+}
+</style>
+
+<div class="test-status" id="test-status">
+    <h3 class="anchored">Status</h3>
+    <div id="status-content">
+        <p>⏳ Initializing...</p>
+    </div>
+</div>
+
+<div class="editor-wrapper">
+    <div class="editor-title">Test Editor</div>
+    <textarea id="test-editor" data-executable="true"># Test comment toggle with cmd-/
+print("Hello, World!")
+x = 5
+y = 10
+result = x + y
+print(f"The sum is: {result}")
+
+def test_function():
+    # This is a comment
+    return "Testing cmd-/"
+    
+# Try selecting multiple lines and pressing cmd-/</textarea>
+</div>
+
+<script>
+// Hybrid initialization script
+let initializationMode = 'unknown';
+let cmInstance = null;
+
+function updateStatus(message, isSuccess = null) {
+    const statusDiv = document.getElementById('status-content');
+    let color = '';
+    if (isSuccess === true) color = 'color: green;';
+    else if (isSuccess === false) color = 'color: red;';
+    
+    statusDiv.innerHTML = `<p style="${color}">${message}</p>`;
+    console.log(`Status: ${message}`);
+}
+
+function testCommentToggle() {
+    if (!cmInstance) {
+        updateStatus('No CodeMirror instance available for testing', false);
+        return false;
+    }
+    
+    try {
+        const extraKeys = cmInstance.getOption('extraKeys');
+        const hasCmd = extraKeys && extraKeys['Cmd-/'] === 'toggleComment';
+        const hasCtrl = extraKeys && extraKeys['Ctrl-/'] === 'toggleComment';
+        const commandAvailable = typeof CodeMirror.commands.toggleComment === 'function';
+        
+        // Test actual toggle
+        const cursor = cmInstance.getCursor();
+        const lineBefore = cmInstance.getLine(cursor.line);
+        CodeMirror.commands.toggleComment(cmInstance);
+        const lineAfter = cmInstance.getLine(cursor.line);
+        const toggleWorked = lineBefore !== lineAfter;
+        
+        // Toggle back
+        if (toggleWorked) {
+            CodeMirror.commands.toggleComment(cmInstance);
+        }
+        
+        const results = {
+            mode: initializationMode,
+            hasCmd,
+            hasCtrl,
+            commandAvailable,
+            toggleWorked,
+            allPassed: hasCmd && hasCtrl && commandAvailable && toggleWorked
+        };
+        
+        console.log('Test Results:', results);
+        
+        if (results.allPassed) {
+            updateStatus(`✅ cmd-/ is working! (initialized via ${initializationMode})`, true);
+        } else {
+            updateStatus(`❌ cmd-/ not fully working. Check console for details.`, false);
+        }
+        
+        return results;
+    } catch (error) {
+        console.error('Test error:', error);
+        updateStatus(`❌ Test error: ${error.message}`, false);
+        return false;
+    }
+}
+
+function initializeDirectCodeMirror() {
+    console.log('Attempting direct CodeMirror initialization...');
+    
+    try {
+        const textarea = document.getElementById('test-editor');
+        if (!textarea) {
+            throw new Error('Textarea not found');
+        }
+        
+        // Check if already initialized by Thebe
+        const existingCM = document.querySelector('.CodeMirror');
+        if (existingCM && existingCM.CodeMirror) {
+            cmInstance = existingCM.CodeMirror;
+            initializationMode = 'thebe';
+            updateStatus('CodeMirror already initialized by Thebe');
+            return true;
+        }
+        
+        // Initialize directly
+        cmInstance = CodeMirror.fromTextArea(textarea, {
+            mode: 'python',
+            theme: 'neo',
+            lineNumbers: true,
+            indentUnit: 4,
+            extraKeys: {
+                'Cmd-/': 'toggleComment',
+                'Ctrl-/': 'toggleComment'
+            }
+        });
+        
+        initializationMode = 'direct';
+        updateStatus('CodeMirror initialized directly (Thebe not available)');
+        
+        // Add key handler to log usage
+        cmInstance.on('keyHandled', (cm, name, event) => {
+            if (name === 'Cmd-/' || name === 'Ctrl-/') {
+                updateStatus(`✅ Comment toggled via ${name} at ${new Date().toLocaleTimeString()}`, true);
+            }
+        });
+        
+        return true;
+    } catch (error) {
+        console.error('Direct initialization failed:', error);
+        updateStatus(`Failed to initialize CodeMirror: ${error.message}`, false);
+        return false;
+    }
+}
+
+// Wait for Thebe or timeout
+let thebeCheckCount = 0;
+const maxThebeChecks = 10; // 5 seconds
+
+function checkInitialization() {
+    thebeCheckCount++;
+    
+    // Check if Thebe created a CodeMirror instance
+    const cmElement = document.querySelector('.CodeMirror');
+    if (cmElement && cmElement.CodeMirror) {
+        cmInstance = cmElement.CodeMirror;
+        initializationMode = 'thebe';
+        updateStatus('✅ CodeMirror initialized by Thebe', true);
+        
+        // Run test after a short delay
+        setTimeout(() => {
+            testCommentToggle();
+            
+            // Expose for console testing
+            window.cmTest = {
+                instance: cmInstance,
+                test: testCommentToggle,
+                mode: initializationMode
+            };
+        }, 500);
+        return;
+    }
+    
+    // Check if we should give up on Thebe
+    if (thebeCheckCount >= maxThebeChecks) {
+        updateStatus('Thebe initialization timeout, falling back to direct initialization');
+        if (initializeDirectCodeMirror()) {
+            setTimeout(() => {
+                testCommentToggle();
+                
+                // Expose for console testing
+                window.cmTest = {
+                    instance: cmInstance,
+                    test: testCommentToggle,
+                    mode: initializationMode
+                };
+            }, 500);
+        }
+        return;
+    }
+    
+    // Keep checking
+    updateStatus(`Waiting for Thebe... (${thebeCheckCount}/${maxThebeChecks})`);
+    setTimeout(checkInitialization, 500);
+}
+
+// Start checking after page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(checkInitialization, 1000);
+    });
+} else {
+    setTimeout(checkInitialization, 1000);
+}
+</script>
+</section>
+<section id="testing-instructions" class="level2">
+<h2 class="anchored" data-anchor-id="testing-instructions">Testing Instructions</h2>
+<p>This page will automatically: 1. Try to initialize CodeMirror via Thebe 2. Fall back to direct initialization if Thebe fails (e.g., on localhost) 3. Run automated tests to verify cmd-/ functionality</p>
+<section id="manual-testing" class="level3">
+<h3 class="anchored" data-anchor-id="manual-testing">Manual Testing</h3>
+<ol type="1">
+<li>Wait for initialization to complete</li>
+<li>Click in the editor</li>
+<li>Press <strong>Cmd-/</strong> (Mac) or <strong>Ctrl-/</strong> (Windows/Linux)</li>
+<li>Lines should toggle between commented/uncommented</li>
+</ol>
+</section>
+<section id="console-testing" class="level3">
+<h3 class="anchored" data-anchor-id="console-testing">Console Testing</h3>
+<div class="sourceCode" id="cb1"><pre class="sourceCode javascript code-with-copy"><code class="sourceCode javascript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Get test results</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">window</span><span class="op">.</span><span class="at">cmTest</span><span class="op">.</span><span class="fu">test</span>()</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Check initialization mode</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="bu">window</span><span class="op">.</span><span class="at">cmTest</span><span class="op">.</span><span class="at">mode</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">// Access CodeMirror instance</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="bu">window</span><span class="op">.</span><span class="at">cmTest</span><span class="op">.</span><span class="at">instance</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
 <!-- Font Awesome for ipywidgets icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg==" crossorigin="anonymous">
 
@@ -154,230 +459,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <!-- Custom Navbar JS -->
 <script src="assets/js/custom-navbar.js"></script>
-
-
-<link rel="stylesheet" href="assets/styles/styles.css">
-<link rel="stylesheet" href="assets/styles/custom.css">
-<meta property="og:title" content="2/3rds Game – Memo Demo">
-<meta property="og:description" content="">
-<meta property="og:site_name" content="Memo Demo">
-<meta name="twitter:title" content="2/3rds Game – Memo Demo">
-<meta name="twitter:description" content="">
-<meta name="twitter:card" content="summary">
-</head>
-
-<body class="quarto-light">
-
-<div id="quarto-search-results"></div>
-<!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full">
-<!-- sidebar -->
-<!-- margin-sidebar -->
-    
-<!-- main -->
-<main class="content column-page" id="quarto-document-content">
-
-<header id="title-block-header" class="quarto-title-block default">
-<div class="quarto-title">
-<h1 class="title">2/3rds Game</h1>
-</div>
-
-
-
-<div class="quarto-title-meta column-page">
-
-    
-  
-    
-  </div>
-  
-
-
-</header>
-
-
-<!-- Thebe status widget mount point (hidden until moved to navbar) -->
-<div class="thebe-status" style="display: none;">
-
-</div>
-<p><br><br></p>
-<section id="anatomy-of-a-memo-model" class="level1">
-<h1>Anatomy of a <code>memo</code> model</h1>
-<section id="memo-models-are-decorated-functions" class="level2">
-<h2 class="anchored" data-anchor-id="memo-models-are-decorated-functions"><code>memo</code> models are decorated functions</h2>
-<div id="f3332e79" class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> memo <span class="im">import</span> memo</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>]</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>Y <span class="op">=</span> <span class="bu">range</span>(<span class="dv">10</span>)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="at">@memo</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> my_model[x: X, y: Y](a, b<span class="op">=</span><span class="dv">2</span>, c<span class="op">=</span><span class="va">None</span>):</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> x <span class="op">+</span> y</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>my_model(<span class="dv">1</span>, b<span class="op">=</span><span class="dv">2</span>, c<span class="op">=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<!-- 
-
-from memo import memo
-import jax
-
-X = [1, 2, 3]
-Y = range(10)
-
-@jax.jit
-def calc(x, y, b):
-    return x + y * b
-@memo
-def my_model[x: X, y: Y](a, b=2, c=None):
-    return calc(x, y, b)
-
-my_model(1, b=2, c=3)
-
- -->
-<p>You can convert the output array into an <code>pandas</code> DataFrame or an <code>xarray</code> for easy indexing:</p>
-<div id="f2664c6a" class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>res <span class="op">=</span> my_model(<span class="dv">1</span>, b<span class="op">=</span><span class="dv">2</span>, c<span class="op">=</span><span class="dv">3</span>, </span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                        return_aux<span class="op">=</span><span class="va">True</span>, </span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                        return_pandas<span class="op">=</span><span class="va">True</span>, </span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                        return_xarray<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> res.data</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> res.aux.pandas</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>xa <span class="op">=</span> res.aux.xarray</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"===JAX array==="</span>)<span class="op">;</span> <span class="bu">print</span>(data)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">===pandas==="</span>)<span class="op">;</span> <span class="bu">print</span>(df.head())</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">===xarray==="</span>)<span class="op">;</span> <span class="bu">print</span>(xa)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<section id="chooses" class="level3">
-<h3 class="anchored" data-anchor-id="chooses"><code>chooses()</code></h3>
-<div id="e95f354a" class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax.numpy <span class="im">as</span> np</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>Z <span class="op">=</span> np.arange(<span class="dv">100</span>) <span class="op">+</span> <span class="dv">1</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="at">@memo</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> my_model[z: Z]():</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    kartik: chooses(z <span class="kw">in</span> Z, wpp<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> E[kartik.z <span class="op">==</span> z]</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>my_model()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section>
-<section id="expressions" class="level3">
-<h3 class="anchored" data-anchor-id="expressions"><code>expressions</code></h3>
-<div id="0e4df9b7" class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax.numpy <span class="im">as</span> np</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>Z <span class="op">=</span> np.arange(<span class="dv">100</span>) <span class="op">+</span> <span class="dv">1</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="at">@memo</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> my_model[z: Z]():</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    kartik: chooses(z <span class="kw">in</span> Z, wpp<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Pr[exp(kartik.z) <span class="op">&gt;</span> <span class="dv">5</span>]</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>my_model()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p><br></p>
-<div id="4d64fde7" class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="at">@memo</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> my_model[z: Z]():</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    kartik: chooses(z <span class="kw">in</span> Z, wpp<span class="op">=</span><span class="dv">3</span> <span class="cf">if</span> z <span class="op">%</span> <span class="dv">2</span> <span class="op">==</span> <span class="dv">0</span> <span class="cf">else</span> <span class="dv">1</span>)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> E[kartik.z <span class="op">==</span> z]</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>my_model()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p><br></p>
-<div id="d057f902" class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib <span class="im">import</span> pyplot <span class="im">as</span> plt</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> jax.scipy.stats.norm <span class="im">import</span> pdf <span class="im">as</span> normpdf</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>gaussianpdf <span class="op">=</span> jax.jit(normpdf)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="at">@memo</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> my_model[z: Z]():</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    kartik: chooses(z <span class="kw">in</span> Z, wpp<span class="op">=</span>gaussianpdf(z, <span class="dv">20</span>, <span class="dv">5</span>))</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> E[kartik.z <span class="op">==</span> z]</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>plt.plot(Z, my_model())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section>
-<section id="thinks" class="level3">
-<h3 class="anchored" data-anchor-id="thinks"><code>thinks[]</code></h3>
-<div id="61bcd688" class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="at">@memo</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> my_model[z: Z]():</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    kartik: thinks[</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        maxkw: chooses(z <span class="kw">in</span> Z, wpp<span class="op">=</span><span class="dv">3</span> <span class="cf">if</span> z <span class="op">%</span> <span class="dv">2</span> <span class="op">==</span> <span class="dv">0</span> <span class="cf">else</span> <span class="dv">1</span>)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    ]</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> kartik[ E[maxkw.z <span class="op">==</span> <span class="dv">1</span>]]</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>my_model()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p><br><br></p>
-</section>
-</section>
-</section>
-<section id="the-23rds-game" class="level1">
-<h1>The 2/3rds game</h1>
-<div id="a589fcaf" class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax.numpy <span class="im">as</span> np</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>N <span class="op">=</span> np.arange(<span class="dv">100</span>) <span class="op">+</span> <span class="dv">1</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="at">@memo</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> reader_thinks():</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    reader: thinks[</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>        population: chooses(n <span class="kw">in</span> N, wpp<span class="op">=</span><span class="dv">1</span>)  <span class="co">### back to a uniform prior</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    ]</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> reader[ E[population.n] ]  <span class="co">### query what the reader thinks about the population</span></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>reader_thinks()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p><br><br></p>
-<div id="c775f252" class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="at">@memo</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> reader_thinks():</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    reader: thinks[</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>        population: chooses(n <span class="kw">in</span> N, wpp<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    ]</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> reader[ (<span class="dv">2</span><span class="op">/</span><span class="dv">3</span>) <span class="op">*</span> E[population.n] ]</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>reader_thinks()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p><br><br></p>
-<div id="dc1b9313" class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib <span class="im">import</span> pyplot <span class="im">as</span> plt</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="at">@memo</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> reader_chooses[n: N](k):</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    reader: thinks[</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>        population: chooses(</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>            n <span class="kw">in</span> N,</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>            wpp<span class="op">=</span>reader_chooses[n](k<span class="op">-</span><span class="dv">1</span>) <span class="cf">if</span> k <span class="op">&gt;</span> <span class="dv">0</span> <span class="cf">else</span> <span class="dv">1</span></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        )</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    ]</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    reader: chooses(n <span class="kw">in</span> N, wpp<span class="op">=</span>exp(<span class="op">-</span><span class="bu">abs</span>((<span class="dv">2</span><span class="op">/</span><span class="dv">3</span>)<span class="op">*</span>E[population.n] <span class="op">-</span> n)))</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Pr[reader.n <span class="op">==</span> n]</span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>plt.plot(N, reader_chooses(<span class="dv">0</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p><br><br></p>
-<div id="9ed4810e" class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots()</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>k_vals <span class="op">=</span> [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">5</span>, <span class="dv">7</span>]</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> k_ <span class="kw">in</span> k_vals:</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    ax.plot(N, reader_chooses(k_), alpha<span class="op">=</span><span class="fl">0.8</span>, label<span class="op">=</span><span class="ss">f"k=</span><span class="sc">{</span>k_<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>ax.set_ylim((<span class="dv">0</span>, <span class="fl">0.5</span>))</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>ax.legend()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-
-
-</section>
-
-</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";

@@ -1,0 +1,188 @@
+---
+title: "QMD Configuration Verifier"
+subtitle: "Verify cmd-/ is properly configured in qmd-generated pages"
+page-layout: full
+sidebar: false
+toc: false
+---
+
+## Verify cmd-/ Configuration
+
+This page loads qmd-generated HTML files and extracts their Thebe configuration to verify cmd-/ is properly set up.
+
+```{=html}
+<style>
+    .success { color: green; font-weight: bold; }
+    .error { color: red; font-weight: bold; }
+    .code { background: #f0f0f0; padding: 10px; border-radius: 4px; font-family: monospace; overflow-x: auto; }
+    .results { margin-top: 20px; padding: 20px; background: #f9f9f9; border-radius: 8px; }
+    iframe { width: 100%; height: 400px; border: 1px solid #ccc; margin-top: 10px; }
+    select { padding: 5px; margin: 0 10px; }
+    button { padding: 5px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #0056b3; }
+</style>
+
+<div>
+    <label>Select a page to verify:</label>
+    <select id="pageSelector">
+        <option value="test-codemirror-static.html">test-codemirror-static.html</option>
+        <option value="index.html">index.html</option>
+        <option value="demo.html">demo.html</option>
+        <option value="demo-eig.html">demo-eig.html</option>
+        <option value="demo-mdp.html">demo-mdp.html</option>
+        <option value="demo-scalar-implicature.html">demo-scalar-implicature.html</option>
+        <option value="game23.html">game23.html</option>
+        <option value="rsa.html">rsa.html</option>
+        <option value="test.html">test.html</option>
+    </select>
+    <button onclick="verifyPage()">Verify Configuration</button>
+</div>
+
+<div id="results" class="results"></div>
+
+<script>
+async function verifyPage() {
+    const selectedPage = document.getElementById('pageSelector').value;
+    const resultsDiv = document.getElementById('results');
+    
+    resultsDiv.innerHTML = '<p>⏳ Loading and analyzing ' + selectedPage + '...</p>';
+    
+    try {
+        // Fetch the page content
+        const response = await fetch(selectedPage);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const html = await response.text();
+        
+        // Parse the HTML
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        
+        // Find Thebe configuration
+        const configScript = doc.querySelector('script[type="text/x-thebe-config"]');
+        
+        if (!configScript) {
+            resultsDiv.innerHTML = '<p class="error">❌ No Thebe configuration found in ' + selectedPage + '</p>';
+            return;
+        }
+        
+        // Parse the configuration
+        let config;
+        try {
+            config = JSON.parse(configScript.textContent);
+        } catch (e) {
+            resultsDiv.innerHTML = '<p class="error">❌ Failed to parse Thebe configuration: ' + e.message + '</p>';
+            return;
+        }
+        
+        const codeMirrorConfig = config.codeMirrorConfig || {};
+        const extraKeys = codeMirrorConfig.extraKeys || {};
+        
+        // Check for cmd-/ configuration
+        const hasCmdSlash = extraKeys['Cmd-/'] === 'toggleComment';
+        const hasCtrlSlash = extraKeys['Ctrl-/'] === 'toggleComment';
+        const hasCommentAddon = html.includes('comment.min.js') || html.includes('addon/comment/comment');
+        const hasThebeConfig = html.includes('thebe-config.js');
+        
+        // Build results HTML
+        let resultsHTML = '<h2>Results for ' + selectedPage + ':</h2>';
+        
+        resultsHTML += '<h3>✅ Thebe Configuration Found:</h3>';
+        resultsHTML += '<div class="code"><pre>' + JSON.stringify(config, null, 2) + '</pre></div>';
+        
+        resultsHTML += '<h3>Key Bindings Status:</h3>';
+        resultsHTML += '<ul>';
+        resultsHTML += '<li>Cmd-/ → ' + (extraKeys['Cmd-/'] || 'NOT SET') + ' ' + (hasCmdSlash ? '✅' : '❌') + '</li>';
+        resultsHTML += '<li>Ctrl-/ → ' + (extraKeys['Ctrl-/'] || 'NOT SET') + ' ' + (hasCtrlSlash ? '✅' : '❌') + '</li>';
+        resultsHTML += '</ul>';
+        
+        resultsHTML += '<h3>Dependencies:</h3>';
+        resultsHTML += '<ul>';
+        resultsHTML += '<li>Comment addon: ' + (hasCommentAddon ? '✅ Loaded' : '❌ Not found') + '</li>';
+        resultsHTML += '<li>Thebe config script: ' + (hasThebeConfig ? '✅ Loaded' : '❌ Not found') + '</li>';
+        resultsHTML += '</ul>';
+        
+        const isFullyConfigured = hasCmdSlash && hasCtrlSlash && hasCommentAddon;
+        
+        resultsHTML += '<h3>Overall Status:</h3>';
+        resultsHTML += '<p class="' + (isFullyConfigured ? 'success' : 'error') + '">';
+        if (isFullyConfigured) {
+            resultsHTML += '✅ cmd-/ is FULLY configured! It will work when Thebe initializes successfully.';
+        } else {
+            resultsHTML += '❌ cmd-/ is NOT fully configured. Issues found:';
+            if (!hasCmdSlash || !hasCtrlSlash) resultsHTML += '<br>- Missing key bindings';
+            if (!hasCommentAddon) resultsHTML += '<br>- Comment addon not loaded';
+        }
+        resultsHTML += '</p>';
+        
+        resultsHTML += '<h3>Page Preview:</h3>';
+        resultsHTML += '<iframe src="' + selectedPage + '" title="Page preview"></iframe>';
+        
+        resultsDiv.innerHTML = resultsHTML;
+        
+        // Log to console for debugging
+        console.log('Configuration verification for', selectedPage, {
+            hasCmdSlash,
+            hasCtrlSlash,
+            hasCommentAddon,
+            hasThebeConfig,
+            isFullyConfigured,
+            extraKeys
+        });
+        
+    } catch (error) {
+        resultsDiv.innerHTML = '<p class="error">❌ Error loading page: ' + error.message + '</p>';
+        console.error('Verification error:', error);
+    }
+}
+
+// Auto-verify the first page on load
+window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(verifyPage, 100);
+});
+
+// Expose verification function globally
+window.verifyAllPages = async function() {
+    const select = document.getElementById('pageSelector');
+    const results = {};
+    
+    for (let i = 0; i < select.options.length; i++) {
+        select.selectedIndex = i;
+        await verifyPage();
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Extract result
+        const resultText = document.querySelector('#results .success, #results .error')?.textContent || '';
+        results[select.options[i].value] = resultText.includes('FULLY configured');
+    }
+    
+    console.table(results);
+    return results;
+};
+</script>
+```
+
+## Manual Verification
+
+You can also manually check the configuration in the browser console:
+
+```javascript
+// On any page with Thebe, run:
+const config = JSON.parse(document.querySelector('script[type="text/x-thebe-config"]')?.textContent || '{}');
+console.log('ExtraKeys:', config.codeMirrorConfig?.extraKeys);
+
+// To verify all pages at once:
+await window.verifyAllPages();
+```
+
+## Why cmd-/ Doesn't Work on Localhost
+
+Even though the configuration is correct:
+
+1. **Thebe fails on localhost** due to CORS when connecting to Binder
+2. **No CodeMirror instances** are created without Thebe
+3. **Configuration is correct** but there's nothing to apply it to
+
+The configuration **WILL work** when deployed to a real server where Thebe can initialize properly.

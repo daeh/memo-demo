@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="">
+<meta name="author" content="Memo Team">
 
-<title>memo – Memo Demo</title>
+<title>Minimal with Thebe Integration (Explicit) – Memo Demo</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,41 +20,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -103,6 +68,289 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 <style>html{ scroll-behavior: smooth; }</style>
+
+
+<link rel="stylesheet" href="assets/styles/styles.css">
+<meta property="og:title" content="Minimal with Thebe Integration (Explicit) – Memo Demo">
+<meta property="og:description" content="No silent fallbacks - see exactly what happens">
+<meta property="og:site_name" content="Memo Demo">
+<meta name="twitter:title" content="Minimal with Thebe Integration (Explicit) – Memo Demo">
+<meta name="twitter:description" content="No silent fallbacks - see exactly what happens">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-search-results"></div>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content column-page" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Minimal with Thebe Integration (Explicit)</h1>
+<p class="subtitle lead">No silent fallbacks - see exactly what happens</p>
+</div>
+
+
+
+<div class="quarto-title-meta column-page">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Memo Team </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="thebe-integration-test" class="level2">
+<h2 class="anchored" data-anchor-id="thebe-integration-test">Thebe Integration Test</h2>
+<p>This page includes Thebe and shows exactly what happens - no hidden fallbacks.</p>
+<style>
+.status-box {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f0f8ff;
+    border: 1px solid #4a90e2;
+    border-radius: 4px;
+}
+.success { color: green; font-weight: bold; }
+.error { color: red; font-weight: bold; }
+.warning { color: orange; font-weight: bold; }
+.info { color: blue; }
+.CodeMirror {
+    border: 1px solid #ddd;
+    height: auto;
+    min-height: 150px;
+}
+</style>
+
+<div class="status-box">
+    <h3 class="anchored">Thebe Status</h3>
+    <div id="thebe-status">
+        <p class="info">⏳ Waiting for page load...</p>
+    </div>
+</div>
+
+<!-- Textarea with data-executable for Thebe -->
+<div style="margin: 20px 0;">
+    <p><strong>Thebe-enabled Editor:</strong> This textarea has <code>data-executable="true"</code></p>
+    <textarea id="thebe-editor" data-executable="true"># This editor should be processed by Thebe
+print("Hello from Thebe!")
+x = 42
+# Press cmd-/ here to test comment toggle</textarea>
+</div>
+
+<div class="status-box">
+    <h3 class="anchored">What's Happening?</h3>
+    <div id="analysis">
+        <p class="info">Analysis will appear here...</p>
+    </div>
+</div>
+
+<div class="status-box">
+    <h3 class="anchored">Manual Actions</h3>
+    <button onclick="checkThebeStatus()">Check Thebe Status</button>
+    <button onclick="checkCodeMirror()">Check CodeMirror Instances</button>
+    <button onclick="checkConfiguration()">Check Configuration</button>
+</div>
+
+<script>
+function updateStatus(elementId, message, className = '') {
+    const element = document.getElementById(elementId);
+    element.innerHTML = `<p class="${className}">${message}</p>`;
+}
+
+function addToAnalysis(message, className = '') {
+    const element = document.getElementById('analysis');
+    const timestamp = new Date().toLocaleTimeString();
+    element.innerHTML += `<p class="${className}">[${timestamp}] ${message}</p>`;
+}
+
+function checkThebeStatus() {
+    console.group('Thebe Status Check');
+    
+    const status = {
+        thebeGlobal: typeof window.thebe !== 'undefined',
+        thebeInstance: typeof window.thebeInstance !== 'undefined',
+        thebeConfig: document.querySelector('script[type="text/x-thebe-config"]') !== null,
+        statusWidget: document.querySelector('.thebe-status') !== null
+    };
+    
+    console.log('Thebe global object:', status.thebeGlobal);
+    console.log('Thebe instance:', status.thebeInstance);
+    console.log('Thebe config found:', status.thebeConfig);
+    console.log('Status widget:', status.statusWidget);
+    
+    if (status.thebeConfig) {
+        try {
+            const config = JSON.parse(document.querySelector('script[type="text/x-thebe-config"]').textContent);
+            console.log('Thebe configuration:', config);
+            console.log('CodeMirror config:', config.codeMirrorConfig);
+            console.log('ExtraKeys:', config.codeMirrorConfig?.extraKeys);
+        } catch (e) {
+            console.error('Failed to parse Thebe config:', e);
+        }
+    }
+    
+    // Update UI
+    if (status.thebeGlobal) {
+        updateStatus('thebe-status', '✅ Thebe library is loaded', 'success');
+        
+        if (status.thebeInstance) {
+            addToAnalysis('✅ Thebe has been bootstrapped', 'success');
+        } else {
+            addToAnalysis('⚠️ Thebe loaded but not bootstrapped', 'warning');
+        }
+    } else {
+        updateStatus('thebe-status', '❌ Thebe library not found', 'error');
+    }
+    
+    console.groupEnd();
+    return status;
+}
+
+function checkCodeMirror() {
+    console.group('CodeMirror Check');
+    
+    const cmElements = document.querySelectorAll('.CodeMirror');
+    console.log(`Found ${cmElements.length} CodeMirror instances`);
+    
+    if (cmElements.length === 0) {
+        addToAnalysis('❌ No CodeMirror instances found', 'error');
+        addToAnalysis('This means Thebe has not created any editors yet', 'info');
+    } else {
+        addToAnalysis(`✅ Found ${cmElements.length} CodeMirror instance(s)`, 'success');
+        
+        cmElements.forEach((el, index) => {
+            if (el.CodeMirror) {
+                const cm = el.CodeMirror;
+                const extraKeys = cm.getOption('extraKeys') || {};
+                
+                console.log(`Instance ${index}:`, {
+                    mode: cm.getOption('mode'),
+                    theme: cm.getOption('theme'),
+                    extraKeys: extraKeys
+                });
+                
+                const hasCmd = extraKeys['Cmd-/'] === 'toggleComment';
+                const hasCtrl = extraKeys['Ctrl-/'] === 'toggleComment';
+                
+                if (hasCmd && hasCtrl) {
+                    addToAnalysis(`✅ Instance ${index}: cmd-/ is properly configured`, 'success');
+                } else {
+                    addToAnalysis(`❌ Instance ${index}: cmd-/ is NOT configured`, 'error');
+                    addToAnalysis(`Current extraKeys: ${JSON.stringify(extraKeys)}`, 'info');
+                }
+            }
+        });
+    }
+    
+    console.groupEnd();
+}
+
+function checkConfiguration() {
+    console.group('Configuration Check');
+    
+    // Check if comment addon is loaded
+    const addonLoaded = typeof CodeMirror !== 'undefined' && 
+                       typeof CodeMirror.commands !== 'undefined' &&
+                       typeof CodeMirror.commands.toggleComment === 'function';
+    
+    if (addonLoaded) {
+        addToAnalysis('✅ CodeMirror comment addon is loaded', 'success');
+    } else {
+        addToAnalysis('❌ CodeMirror comment addon NOT loaded', 'error');
+        if (typeof CodeMirror === 'undefined') {
+            addToAnalysis('CodeMirror itself is not loaded!', 'error');
+        }
+    }
+    
+    // Check Thebe configuration
+    const configScript = document.querySelector('script[type="text/x-thebe-config"]');
+    if (configScript) {
+        try {
+            const config = JSON.parse(configScript.textContent);
+            const hasExtraKeys = config.codeMirrorConfig?.extraKeys?.['Cmd-/'] === 'toggleComment';
+            
+            if (hasExtraKeys) {
+                addToAnalysis('✅ Thebe config includes cmd-/ mapping', 'success');
+            } else {
+                addToAnalysis('❌ Thebe config missing cmd-/ mapping', 'error');
+            }
+            
+            console.log('Full Thebe config:', config);
+        } catch (e) {
+            addToAnalysis('❌ Failed to parse Thebe config', 'error');
+        }
+    }
+    
+    console.groupEnd();
+}
+
+// Monitor what happens on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateStatus('thebe-status', 'Page loaded, checking for Thebe...', 'info');
+    
+    // Initial check
+    setTimeout(() => {
+        const status = checkThebeStatus();
+        
+        if (!status.thebeGlobal) {
+            addToAnalysis('Thebe is not loaded at all. This could mean:', 'warning');
+            addToAnalysis('1. The include-after-body might not be working', 'info');
+            addToAnalysis('2. There might be a JavaScript error', 'info');
+            addToAnalysis('Check the browser console for errors', 'info');
+        }
+    }, 2000);
+    
+    // Check for CodeMirror after a delay
+    setTimeout(() => {
+        addToAnalysis('Checking for CodeMirror instances...', 'info');
+        checkCodeMirror();
+    }, 5000);
+});
+
+// Log all Thebe events if available
+if (window.thebe && window.thebe.events) {
+    window.thebe.events.on('status', (event, data) => {
+        console.log('Thebe event:', data);
+        addToAnalysis(`Thebe event: ${data.subject} - ${data.status}`, 'info');
+    });
+}
+</script>
+</section>
+<section id="what-this-page-does" class="level2">
+<h2 class="anchored" data-anchor-id="what-this-page-does">What This Page Does</h2>
+<ol type="1">
+<li><strong>No hidden fallbacks</strong> - Shows exactly what Thebe does or doesn’t do</li>
+<li><strong>Status monitoring</strong> - Displays real-time status of Thebe</li>
+<li><strong>Manual checks</strong> - Buttons to inspect the current state</li>
+<li><strong>Event logging</strong> - Shows Thebe events as they happen</li>
+</ol>
+</section>
+<section id="expected-on-localhost" class="level2">
+<h2 class="anchored" data-anchor-id="expected-on-localhost">Expected on Localhost</h2>
+<p>Since Thebe fails on localhost due to CORS: - Thebe library loads ✅ - Thebe tries to connect to Binder ❌ - No CodeMirror instances created ❌ - cmd-/ doesn’t work ❌</p>
+<p>This is the actual behavior we need to understand and fix!</p>
+
+
+</section>
+
+</main> <!-- /main -->
 <!-- Font Awesome for ipywidgets icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg==" crossorigin="anonymous">
 
@@ -154,88 +402,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <!-- Custom Navbar JS -->
 <script src="assets/js/custom-navbar.js"></script>
-
-
-<link rel="stylesheet" href="assets/styles/styles.css">
-<link rel="stylesheet" href="assets/styles/custom.css">
-<meta property="og:title" content="memo – Memo Demo">
-<meta property="og:description" content="">
-<meta property="og:site_name" content="Memo Demo">
-<meta name="twitter:title" content="memo – Memo Demo">
-<meta name="twitter:description" content="">
-<meta name="twitter:card" content="summary">
-</head>
-
-<body class="quarto-light">
-
-<div id="quarto-search-results"></div>
-<!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full">
-<!-- sidebar -->
-<!-- margin-sidebar -->
-    
-<!-- main -->
-<main class="content column-page" id="quarto-document-content">
-
-<header id="title-block-header" class="quarto-title-block default">
-<div class="quarto-title">
-<h1 class="title">memo</h1>
-</div>
-
-
-
-<div class="quarto-title-meta column-page">
-
-    
-  
-    
-  </div>
-  
-
-
-</header>
-
-
-<!-- Thebe status widget mount point (hidden until moved to navbar) -->
-<div class="thebe-status" style="display: none;">
-
-</div>
-<div id="6c66b058" class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> memo <span class="im">import</span> memo</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax.numpy <span class="im">as</span> np</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> enum <span class="im">import</span> IntEnum</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(jax.__version__)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<section id="suggested-demos" class="level3">
-<h3 class="anchored" data-anchor-id="suggested-demos">Suggested demos</h3>
-<ul>
-<li><p><a href="./demo-scalar-implicature.html">Scalar Implicature</a></p></li>
-<li><p><a href="./demo-eig.html">Question-asking via expected information gain</a></p></li>
-<li><p><a href="./demo-mdp.html">Planning and inverse-planning in an MDP</a></p></li>
-</ul>
-<!-- 
-- [Scalar Implicature](https://github.com/kach/memo/blob/main/demo/demo-scalar.py)
-
-- [Question-asking via expected information gain](https://github.com/kach/memo/blob/main/demo/demo-eig.ipynb)
-
-- [Planning and inverse-planning in an MDP](https://github.com/kach/memo/blob/main/demo/demo-mdp.ipynb) 
--->
-</section>
-<section id="memo-resources" class="level3">
-<h3 class="anchored" data-anchor-id="memo-resources"><code>memo</code> resources</h3>
-<ul>
-<li><p><a href="https://github.com/kach/memo"><code>memo</code> GitHub Repo</a></p></li>
-<li><p><a href="https://github.com/kach/memo/blob/main/Handbook.pdf">The <code>memo</code> handbook</a></p></li>
-<li><p><a href="https://github.com/kach/memo/discussions">GitHub Discussions</a> - To ask questions about memo, and to get help from other memo users.</p></li>
-<li><p><a href="https://lists.csail.mit.edu/mailman/listinfo/memo-lang">Mailing list</a> - For updates on memo’s development.</p></li>
-</ul>
-
-
-</section>
-
-</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";

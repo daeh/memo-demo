@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeMirror Comment Toggle Test</title>
+    
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/neo.min.css">
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007acc;
+            padding-bottom: 10px;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .editor-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .editor-section h2 {
+            margin-top: 0;
+            color: #555;
+            font-size: 18px;
+        }
+        
+        .CodeMirror {
+            height: 300px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #005a9e;
+        }
+        
+        button.test {
+            background: #28a745;
+        }
+        
+        button.test:hover {
+            background: #218838;
+        }
+        
+        button.debug {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        button.debug:hover {
+            background: #e0a800;
+        }
+        
+        .info-box {
+            background: #e9f5ff;
+            border: 1px solid #007acc;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .info-box h3 {
+            margin-top: 0;
+            color: #007acc;
+        }
+        
+        .info-box code {
+            background: #f5f5f5;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        
+        .success {
+            color: #28a745;
+        }
+        
+        .error {
+            color: #dc3545;
+        }
+        
+        .warning {
+            color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 CodeMirror Comment Toggle Test Page</h1>
+    
+    <div class="info-box">
+        <h3>Testing Instructions:</h3>
+        <p>This page tests the cmd-/ (Mac) and Ctrl-/ (Windows/Linux) comment toggle functionality.</p>
+        <ul>
+            <li>Click in either editor and press <code>Cmd-/</code> (Mac) or <code>Ctrl-/</code> (Windows/Linux)</li>
+            <li>Select multiple lines and use the shortcut to toggle comments on all lines</li>
+            <li>Use the test buttons below to run automated tests</li>
+        </ul>
+    </div>
+    
+    <div class="container">
+        <div class="editor-section">
+            <h2>Python Editor</h2>
+            <textarea id="python-editor">def fibonacci(n):
+    """Generate Fibonacci sequence up to n"""
+    a, b = 0, 1
+    result = []
+    
+    while a < n:
+        result.append(a)
+        a, b = b, a + b
+    
+    return result
+
+# Test the function
+print(fibonacci(100))</textarea>
+        </div>
+        
+        <div class="editor-section">
+            <h2>JavaScript Editor</h2>
+            <textarea id="js-editor">function fibonacci(n) {
+    // Generate Fibonacci sequence up to n
+    let a = 0, b = 1;
+    const result = [];
+    
+    while (a < n) {
+        result.push(a);
+        [a, b] = [b, a + b];
+    }
+    
+    return result;
+}
+
+// Test the function
+console.log(fibonacci(100));</textarea>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <button onclick="testBasicFunctionality()" class="test">Test Basic Functionality</button>
+        <button onclick="testMultiLine()" class="test">Test Multi-Line Comments</button>
+        <button onclick="runAllTests()" class="test">Run All Tests</button>
+        <button onclick="checkEnvironment()" class="debug">Check Environment</button>
+        <button onclick="forceReconfigure()" class="debug">Force Reconfigure</button>
+        <button onclick="resetEditors()" class="debug">Reset Editors</button>
+    </div>
+    
+    <div id="status" class="status"></div>
+    
+    <!-- CodeMirror Core -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    
+    <!-- Language Modes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    
+    <!-- Comment Addon -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/comment/comment.min.js"></script>
+    
+    <script>
+        // Initialize CodeMirror editors
+        let pythonEditor, jsEditor;
+        const statusDiv = document.getElementById('status');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+            const className = type;
+            
+            statusDiv.innerHTML += `<span class="${className}">[${timestamp}] ${prefix} ${message}</span>\n`;
+            statusDiv.scrollTop = statusDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function initEditors() {
+            // Python editor
+            pythonEditor = CodeMirror.fromTextArea(document.getElementById('python-editor'), {
+                mode: 'python',
+                theme: 'neo',
+                lineNumbers: true,
+                indentUnit: 4,
+                indentWithTabs: false,
+                extraKeys: {
+                    'Cmd-/': 'toggleComment',
+                    'Ctrl-/': 'toggleComment'
+                }
+            });
+            
+            // JavaScript editor
+            jsEditor = CodeMirror.fromTextArea(document.getElementById('js-editor'), {
+                mode: 'javascript',
+                theme: 'neo',
+                lineNumbers: true,
+                indentUnit: 2,
+                indentWithTabs: false,
+                extraKeys: {
+                    'Cmd-/': 'toggleComment',
+                    'Ctrl-/': 'toggleComment'
+                }
+            });
+            
+            log('Editors initialized with comment toggle shortcuts', 'success');
+        }
+        
+        function checkEnvironment() {
+            statusDiv.innerHTML = '';
+            log('Checking environment...', 'info');
+            
+            const checks = {
+                'CodeMirror loaded': !!window.CodeMirror,
+                'Comment addon loaded': !!(window.CodeMirror?.commands?.toggleComment),
+                'Python editor initialized': !!pythonEditor,
+                'JS editor initialized': !!jsEditor,
+                'Python editor has shortcuts': !!(pythonEditor?.getOption('extraKeys')?.['Cmd-/']),
+                'JS editor has shortcuts': !!(jsEditor?.getOption('extraKeys')?.['Cmd-/'])
+            };
+            
+            for (const [check, result] of Object.entries(checks)) {
+                log(`${check}: ${result}`, result ? 'success' : 'error');
+            }
+            
+            return Object.values(checks).every(v => v);
+        }
+        
+        function testBasicFunctionality() {
+            statusDiv.innerHTML = '';
+            log('Testing basic comment toggle...', 'info');
+            
+            try {
+                // Test Python editor
+                const originalPython = pythonEditor.getValue();
+                pythonEditor.setValue('print("Hello World")');
+                pythonEditor.setCursor(0, 0);
+                
+                CodeMirror.commands.toggleComment(pythonEditor);
+                const pythonCommented = pythonEditor.getValue();
+                
+                CodeMirror.commands.toggleComment(pythonEditor);
+                const pythonUncommented = pythonEditor.getValue();
+                
+                pythonEditor.setValue(originalPython);
+                
+                const pythonSuccess = pythonCommented.includes('#') && !pythonUncommented.includes('#');
+                log(`Python comment toggle: ${pythonSuccess ? 'PASS' : 'FAIL'}`, pythonSuccess ? 'success' : 'error');
+                
+                // Test JavaScript editor
+                const originalJS = jsEditor.getValue();
+                jsEditor.setValue('console.log("Hello World");');
+                jsEditor.setCursor(0, 0);
+                
+                CodeMirror.commands.toggleComment(jsEditor);
+                const jsCommented = jsEditor.getValue();
+                
+                CodeMirror.commands.toggleComment(jsEditor);
+                const jsUncommented = jsEditor.getValue();
+                
+                jsEditor.setValue(originalJS);
+                
+                const jsSuccess = jsCommented.includes('//') && !jsUncommented.includes('//');
+                log(`JavaScript comment toggle: ${jsSuccess ? 'PASS' : 'FAIL'}`, jsSuccess ? 'success' : 'error');
+                
+                return pythonSuccess && jsSuccess;
+            } catch (error) {
+                log(`Error during test: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        function testMultiLine() {
+            statusDiv.innerHTML = '';
+            log('Testing multi-line comment toggle...', 'info');
+            
+            try {
+                // Test Python multi-line
+                const originalPython = pythonEditor.getValue();
+                pythonEditor.setValue('line1\nline2\nline3');
+                pythonEditor.setSelection({line: 0, ch: 0}, {line: 2, ch: 5});
+                
+                CodeMirror.commands.toggleComment(pythonEditor);
+                const pythonCommented = pythonEditor.getValue();
+                const pythonLines = pythonCommented.split('\n');
+                const pythonAllCommented = pythonLines.every(line => line.startsWith('#'));
+                
+                pythonEditor.setValue(originalPython);
+                
+                log(`Python multi-line: ${pythonAllCommented ? 'PASS' : 'FAIL'}`, pythonAllCommented ? 'success' : 'error');
+                
+                // Test JavaScript multi-line
+                const originalJS = jsEditor.getValue();
+                jsEditor.setValue('line1\nline2\nline3');
+                jsEditor.setSelection({line: 0, ch: 0}, {line: 2, ch: 5});
+                
+                CodeMirror.commands.toggleComment(jsEditor);
+                const jsCommented = jsEditor.getValue();
+                const jsLines = jsCommented.split('\n');
+                const jsAllCommented = jsLines.every(line => line.startsWith('//'));
+                
+                jsEditor.setValue(originalJS);
+                
+                log(`JavaScript multi-line: ${jsAllCommented ? 'PASS' : 'FAIL'}`, jsAllCommented ? 'success' : 'error');
+                
+                return pythonAllCommented && jsAllCommented;
+            } catch (error) {
+                log(`Error during test: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        function runAllTests() {
+            statusDiv.innerHTML = '';
+            log('Running all tests...', 'info');
+            
+            const envOk = checkEnvironment();
+            if (!envOk) {
+                log('Environment check failed!', 'error');
+                return;
+            }
+            
+            const basicOk = testBasicFunctionality();
+            const multiLineOk = testMultiLine();
+            
+            log('=' .repeat(50), 'info');
+            log(`Test Results: ${basicOk && multiLineOk ? 'ALL PASS' : 'SOME FAILED'}`, 
+                basicOk && multiLineOk ? 'success' : 'error');
+        }
+        
+        function forceReconfigure() {
+            statusDiv.innerHTML = '';
+            log('Forcing reconfiguration...', 'info');
+            
+            const editors = [pythonEditor, jsEditor];
+            const names = ['Python', 'JavaScript'];
+            
+            editors.forEach((editor, i) => {
+                if (editor) {
+                    const currentKeys = editor.getOption('extraKeys') || {};
+                    editor.setOption('extraKeys', {
+                        ...currentKeys,
+                        'Cmd-/': 'toggleComment',
+                        'Ctrl-/': 'toggleComment'
+                    });
+                    log(`${names[i]} editor reconfigured`, 'success');
+                }
+            });
+        }
+        
+        function resetEditors() {
+            statusDiv.innerHTML = '';
+            log('Resetting editors to original content...', 'info');
+            
+            pythonEditor.setValue(`def fibonacci(n):
+    """Generate Fibonacci sequence up to n"""
+    a, b = 0, 1
+    result = []
+    
+    while a < n:
+        result.append(a)
+        a, b = b, a + b
+    
+    return result
+
+# Test the function
+print(fibonacci(100))`);
+            
+            jsEditor.setValue(`function fibonacci(n) {
+    // Generate Fibonacci sequence up to n
+    let a = 0, b = 1;
+    const result = [];
+    
+    while (a < n) {
+        result.push(a);
+        [a, b] = [b, a + b];
+    }
+    
+    return result;
+}
+
+// Test the function
+console.log(fibonacci(100));`);
+            
+            log('Editors reset', 'success');
+        }
+        
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            initEditors();
+            checkEnvironment();
+            
+            // Add keyboard shortcut indicator
+            log('Ready! Use Cmd-/ (Mac) or Ctrl-/ (Windows/Linux) to toggle comments', 'success');
+        });
+    </script>
+</body>
+</html>

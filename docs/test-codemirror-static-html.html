@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeMirror Comment Toggle Test</title>
+    
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/neo.min.css">
+    
+    <!-- CodeMirror JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/comment/comment.min.js"></script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .instructions {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #2196F3;
+        }
+        .editor-wrapper {
+            margin: 20px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .editor-title {
+            background: #f0f0f0;
+            padding: 8px 15px;
+            font-weight: bold;
+            font-size: 14px;
+            border-bottom: 1px solid #ddd;
+        }
+        .CodeMirror {
+            height: auto;
+            min-height: 100px;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CodeMirror Comment Toggle Test</h1>
+        
+        <div class="instructions">
+            <strong>Instructions:</strong>
+            <ol>
+                <li>Click in any code editor below</li>
+                <li>Select one or more lines (or just place cursor on a line)</li>
+                <li>Press <strong>Cmd-/</strong> (Mac) or <strong>Ctrl-/</strong> (Windows/Linux)</li>
+                <li>The selected lines will be commented/uncommented with #</li>
+            </ol>
+        </div>
+
+        <div class="editor-wrapper">
+            <div class="editor-title">Example 1: Basic Python Code</div>
+            <textarea id="editor1">
+# This is a test comment
+print("Hello, World!")
+x = 5
+y = 10
+result = x + y
+print(f"The sum is: {result}")</textarea>
+        </div>
+
+        <div class="editor-wrapper">
+            <div class="editor-title">Example 2: Function with Comments</div>
+            <textarea id="editor2">
+# Test multi-line selection commenting
+def greet(name):
+    greeting = f"Hello, {name}!"
+    print(greeting)
+    return greeting
+
+# Call the function
+greet("CodeMirror")</textarea>
+        </div>
+
+        <div class="editor-wrapper">
+            <div class="editor-title">Example 3: Mixed Code and Comments</div>
+            <textarea id="editor3">
+import math
+
+# Calculate circle area
+radius = 5
+area = math.pi * radius ** 2
+
+# Display result
+print(f"Area of circle: {area:.2f}")
+
+# TODO: Add circumference calculation
+# circumference = 2 * math.pi * radius</textarea>
+        </div>
+
+        <div class="status" id="status">
+            Status: Page loaded. Try using Cmd-/ or Ctrl-/ in the editors above.
+        </div>
+    </div>
+
+    <script>
+        // Initialize CodeMirror instances
+        const editors = [];
+        
+        ['editor1', 'editor2', 'editor3'].forEach((id, index) => {
+            const textarea = document.getElementById(id);
+            const editor = CodeMirror.fromTextArea(textarea, {
+                mode: 'python',
+                theme: 'neo',
+                lineNumbers: true,
+                indentUnit: 4,
+                extraKeys: {
+                    'Cmd-/': 'toggleComment',
+                    'Ctrl-/': 'toggleComment'
+                }
+            });
+            
+            editors.push(editor);
+            
+            // Log when comment is toggled
+            editor.on('keyHandled', (cm, name, event) => {
+                if (name === 'Cmd-/' || name === 'Ctrl-/') {
+                    document.getElementById('status').textContent = 
+                        `Status: Comment toggled in Example ${index + 1} at ${new Date().toLocaleTimeString()}`;
+                }
+            });
+        });
+        
+        // Log that everything is ready
+        console.log('✅ CodeMirror editors initialized with comment toggle (Cmd-/ or Ctrl-/)');
+        document.getElementById('status').textContent = 
+            'Status: Ready! All editors support Cmd-/ or Ctrl-/ for comment toggling.';
+    </script>
+</body>
+</html>

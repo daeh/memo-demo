@@ -1,0 +1,245 @@
+---
+title: "Minimal with Thebe Integration (Explicit)"
+subtitle: "No silent fallbacks - see exactly what happens"
+page-layout: full
+sidebar: false
+toc: false
+include-after-body: includes/thebe.html
+---
+
+## Thebe Integration Test
+
+This page includes Thebe and shows exactly what happens - no hidden fallbacks.
+
+```{=html}
+<style>
+.status-box {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f0f8ff;
+    border: 1px solid #4a90e2;
+    border-radius: 4px;
+}
+.success { color: green; font-weight: bold; }
+.error { color: red; font-weight: bold; }
+.warning { color: orange; font-weight: bold; }
+.info { color: blue; }
+.CodeMirror {
+    border: 1px solid #ddd;
+    height: auto;
+    min-height: 150px;
+}
+</style>
+
+<div class="status-box">
+    <h3>Thebe Status</h3>
+    <div id="thebe-status">
+        <p class="info">⏳ Waiting for page load...</p>
+    </div>
+</div>
+
+<!-- Textarea with data-executable for Thebe -->
+<div style="margin: 20px 0;">
+    <p><strong>Thebe-enabled Editor:</strong> This textarea has <code>data-executable="true"</code></p>
+    <textarea id="thebe-editor" data-executable="true"># This editor should be processed by Thebe
+print("Hello from Thebe!")
+x = 42
+# Press cmd-/ here to test comment toggle</textarea>
+</div>
+
+<div class="status-box">
+    <h3>What's Happening?</h3>
+    <div id="analysis">
+        <p class="info">Analysis will appear here...</p>
+    </div>
+</div>
+
+<div class="status-box">
+    <h3>Manual Actions</h3>
+    <button onclick="checkThebeStatus()">Check Thebe Status</button>
+    <button onclick="checkCodeMirror()">Check CodeMirror Instances</button>
+    <button onclick="checkConfiguration()">Check Configuration</button>
+</div>
+
+<script>
+function updateStatus(elementId, message, className = '') {
+    const element = document.getElementById(elementId);
+    element.innerHTML = `<p class="${className}">${message}</p>`;
+}
+
+function addToAnalysis(message, className = '') {
+    const element = document.getElementById('analysis');
+    const timestamp = new Date().toLocaleTimeString();
+    element.innerHTML += `<p class="${className}">[${timestamp}] ${message}</p>`;
+}
+
+function checkThebeStatus() {
+    console.group('Thebe Status Check');
+    
+    const status = {
+        thebeGlobal: typeof window.thebe !== 'undefined',
+        thebeInstance: typeof window.thebeInstance !== 'undefined',
+        thebeConfig: document.querySelector('script[type="text/x-thebe-config"]') !== null,
+        statusWidget: document.querySelector('.thebe-status') !== null
+    };
+    
+    console.log('Thebe global object:', status.thebeGlobal);
+    console.log('Thebe instance:', status.thebeInstance);
+    console.log('Thebe config found:', status.thebeConfig);
+    console.log('Status widget:', status.statusWidget);
+    
+    if (status.thebeConfig) {
+        try {
+            const config = JSON.parse(document.querySelector('script[type="text/x-thebe-config"]').textContent);
+            console.log('Thebe configuration:', config);
+            console.log('CodeMirror config:', config.codeMirrorConfig);
+            console.log('ExtraKeys:', config.codeMirrorConfig?.extraKeys);
+        } catch (e) {
+            console.error('Failed to parse Thebe config:', e);
+        }
+    }
+    
+    // Update UI
+    if (status.thebeGlobal) {
+        updateStatus('thebe-status', '✅ Thebe library is loaded', 'success');
+        
+        if (status.thebeInstance) {
+            addToAnalysis('✅ Thebe has been bootstrapped', 'success');
+        } else {
+            addToAnalysis('⚠️ Thebe loaded but not bootstrapped', 'warning');
+        }
+    } else {
+        updateStatus('thebe-status', '❌ Thebe library not found', 'error');
+    }
+    
+    console.groupEnd();
+    return status;
+}
+
+function checkCodeMirror() {
+    console.group('CodeMirror Check');
+    
+    const cmElements = document.querySelectorAll('.CodeMirror');
+    console.log(`Found ${cmElements.length} CodeMirror instances`);
+    
+    if (cmElements.length === 0) {
+        addToAnalysis('❌ No CodeMirror instances found', 'error');
+        addToAnalysis('This means Thebe has not created any editors yet', 'info');
+    } else {
+        addToAnalysis(`✅ Found ${cmElements.length} CodeMirror instance(s)`, 'success');
+        
+        cmElements.forEach((el, index) => {
+            if (el.CodeMirror) {
+                const cm = el.CodeMirror;
+                const extraKeys = cm.getOption('extraKeys') || {};
+                
+                console.log(`Instance ${index}:`, {
+                    mode: cm.getOption('mode'),
+                    theme: cm.getOption('theme'),
+                    extraKeys: extraKeys
+                });
+                
+                const hasCmd = extraKeys['Cmd-/'] === 'toggleComment';
+                const hasCtrl = extraKeys['Ctrl-/'] === 'toggleComment';
+                
+                if (hasCmd && hasCtrl) {
+                    addToAnalysis(`✅ Instance ${index}: cmd-/ is properly configured`, 'success');
+                } else {
+                    addToAnalysis(`❌ Instance ${index}: cmd-/ is NOT configured`, 'error');
+                    addToAnalysis(`Current extraKeys: ${JSON.stringify(extraKeys)}`, 'info');
+                }
+            }
+        });
+    }
+    
+    console.groupEnd();
+}
+
+function checkConfiguration() {
+    console.group('Configuration Check');
+    
+    // Check if comment addon is loaded
+    const addonLoaded = typeof CodeMirror !== 'undefined' && 
+                       typeof CodeMirror.commands !== 'undefined' &&
+                       typeof CodeMirror.commands.toggleComment === 'function';
+    
+    if (addonLoaded) {
+        addToAnalysis('✅ CodeMirror comment addon is loaded', 'success');
+    } else {
+        addToAnalysis('❌ CodeMirror comment addon NOT loaded', 'error');
+        if (typeof CodeMirror === 'undefined') {
+            addToAnalysis('CodeMirror itself is not loaded!', 'error');
+        }
+    }
+    
+    // Check Thebe configuration
+    const configScript = document.querySelector('script[type="text/x-thebe-config"]');
+    if (configScript) {
+        try {
+            const config = JSON.parse(configScript.textContent);
+            const hasExtraKeys = config.codeMirrorConfig?.extraKeys?.['Cmd-/'] === 'toggleComment';
+            
+            if (hasExtraKeys) {
+                addToAnalysis('✅ Thebe config includes cmd-/ mapping', 'success');
+            } else {
+                addToAnalysis('❌ Thebe config missing cmd-/ mapping', 'error');
+            }
+            
+            console.log('Full Thebe config:', config);
+        } catch (e) {
+            addToAnalysis('❌ Failed to parse Thebe config', 'error');
+        }
+    }
+    
+    console.groupEnd();
+}
+
+// Monitor what happens on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateStatus('thebe-status', 'Page loaded, checking for Thebe...', 'info');
+    
+    // Initial check
+    setTimeout(() => {
+        const status = checkThebeStatus();
+        
+        if (!status.thebeGlobal) {
+            addToAnalysis('Thebe is not loaded at all. This could mean:', 'warning');
+            addToAnalysis('1. The include-after-body might not be working', 'info');
+            addToAnalysis('2. There might be a JavaScript error', 'info');
+            addToAnalysis('Check the browser console for errors', 'info');
+        }
+    }, 2000);
+    
+    // Check for CodeMirror after a delay
+    setTimeout(() => {
+        addToAnalysis('Checking for CodeMirror instances...', 'info');
+        checkCodeMirror();
+    }, 5000);
+});
+
+// Log all Thebe events if available
+if (window.thebe && window.thebe.events) {
+    window.thebe.events.on('status', (event, data) => {
+        console.log('Thebe event:', data);
+        addToAnalysis(`Thebe event: ${data.subject} - ${data.status}`, 'info');
+    });
+}
+</script>
+```
+
+## What This Page Does
+
+1. **No hidden fallbacks** - Shows exactly what Thebe does or doesn't do
+2. **Status monitoring** - Displays real-time status of Thebe
+3. **Manual checks** - Buttons to inspect the current state
+4. **Event logging** - Shows Thebe events as they happen
+
+## Expected on Localhost
+
+Since Thebe fails on localhost due to CORS:
+- Thebe library loads ✅
+- Thebe tries to connect to Binder ❌
+- No CodeMirror instances created ❌
+- cmd-/ doesn't work ❌
+
+This is the actual behavior we need to understand and fix!

@@ -1,0 +1,43 @@
+---
+title: "Translation Comparison"
+page-layout: full
+sidebar: false
+toc: false
+---
+
+## CodeMirror Translation Progress
+
+**Step 1:** Changed theme from 'neo' to 'default' to match qmd files
+
+```{=html}
+<style>
+    .container { display: flex; gap: 20px; margin-top: 20px; }
+    .frame-container { flex: 1; }
+    .frame-container h3 { margin-top: 0; }
+    iframe { width: 100%; height: 600px; border: 1px solid #ccc; }
+    .status { padding: 10px; background: #f0f0f0; margin-bottom: 10px; border-radius: 4px; }
+</style>
+
+<div class="status">
+    <strong>Testing:</strong> Both editors should support cmd-/ for comment toggle. The only difference is the theme.
+</div>
+
+<div class="container">
+    <div class="frame-container">
+        <h3>Original (theme: neo)</h3>
+        <iframe src="test-codemirror-static-html.html"></iframe>
+    </div>
+    
+    <div class="frame-container">
+        <h3>Translation (theme: default)</h3>
+        <iframe src="test-codemirror-static-html-translate.html"></iframe>
+    </div>
+</div>
+
+<script>
+setTimeout(() => {
+    console.log('Both pages loaded. You can test cmd-/ in both editors.');
+    console.log('Original uses neo theme, Translation uses default theme (like qmd files).');
+}, 2000);
+</script>
+```

@@ -1,0 +1,131 @@
+---
+title: "Comment Toggle Test Suite"
+page-layout: full
+sidebar: false
+toc: false
+include-after-body: includes/thebe.html
+---
+
+## Automated Test Results
+
+```{=html}
+<div id="test-status" style="padding: 20px; margin: 20px 0; background: #f0f0f0; border-radius: 5px;">
+  <p>⏳ Waiting for Thebe to initialize...</p>
+</div>
+
+<div id="test-results" style="display: none; padding: 20px; margin: 20px 0; background: #f9f9f9; border-radius: 5px;">
+  <h3>Test Results</h3>
+  <pre id="results-json" style="background: white; padding: 10px; border: 1px solid #ddd; overflow: auto;"></pre>
+</div>
+
+<script>
+// Auto-run tests when Thebe is ready
+let testAttempts = 0;
+const maxAttempts = 30; // 30 seconds
+
+function checkAndRunTests() {
+  testAttempts++;
+  const statusDiv = document.getElementById('test-status');
+  const resultsDiv = document.getElementById('test-results');
+  
+  // Check if testCommentToggle function is available
+  if (window.testCommentToggle && window.CodeMirror) {
+    try {
+      // Run the test
+      const results = window.testCommentToggle();
+      
+      // Display results
+      statusDiv.innerHTML = results.summary.working === results.summary.total && results.summary.total > 0
+        ? '<p style="color: green;">✅ All tests passed! Comment toggle is working correctly.</p>'
+        : '<p style="color: orange;">⚠️ Some tests failed. Check console for details.</p>';
+      
+      resultsDiv.style.display = 'block';
+      document.getElementById('results-json').textContent = JSON.stringify(results, null, 2);
+      
+      // Also run quick test
+      if (window.quickCommentTest) {
+        setTimeout(() => {
+          console.log('Quick test result:', window.quickCommentTest());
+        }, 100);
+      }
+    } catch (error) {
+      statusDiv.innerHTML = '<p style="color: red;">❌ Test error: ' + error.message + '</p>';
+      console.error('Test error:', error);
+    }
+  } else if (testAttempts < maxAttempts) {
+    statusDiv.innerHTML = `<p>⏳ Waiting for initialization... (${testAttempts}/${maxAttempts})</p>`;
+    setTimeout(checkAndRunTests, 1000);
+  } else {
+    statusDiv.innerHTML = '<p style="color: red;">❌ Timeout: Test functions not available after 30 seconds</p>';
+  }
+}
+
+// Start checking after page load
+setTimeout(checkAndRunTests, 2000);
+</script>
+```
+
+## Manual Test Instructions
+
+After Thebe initializes, test the comment toggle functionality:
+
+1. Click in any code editor below
+2. Press **Cmd-/** (Mac) or **Ctrl-/** (Windows/Linux)
+3. The current line should toggle between commented/uncommented
+4. Select multiple lines and press the shortcut to toggle all selected lines
+
+## Test Editors
+
+### Python Code Example
+
+```python
+# This is a test comment
+print("Hello World")
+x = 5
+y = 10
+result = x + y
+print(f"The sum is: {result}")
+```
+
+### Multi-line Test
+
+```python
+def calculate_average(numbers):
+    if not numbers:
+        return 0
+    total = sum(numbers)
+    count = len(numbers)
+    average = total / count
+    return average
+
+# Test the function
+test_data = [10, 20, 30, 40, 50]
+avg = calculate_average(test_data)
+print(f"Average: {avg}")
+```
+
+### Mixed Comments Test
+
+```python
+# This line is already commented
+print("This line is not commented")
+# Another comment here
+value = 42
+print(f"Value: {value}")  # Inline comment
+# Final comment
+```
+
+## Console Commands
+
+Open the browser console and run these commands to test:
+
+```javascript
+// Quick test
+window.quickCommentTest()
+
+// Detailed test
+window.testCommentToggle()
+
+// Check specific instance
+document.querySelector('.CodeMirror').CodeMirror.getOption('extraKeys')
+```

@@ -1,0 +1,6 @@
+- NEVER edit files in `./docs/` - this is where the static build is emitted. The source files are in `./src/`
+- The code you write should be DRY, efficient, reliable, and use the very latest best practices for JavaScript, Quarto (>=v1.8), Thebe (>=v0.9.2), Python (>=v3.13), CodeMirror, Binder, etc.
+- When interfacing with Thebe, reference the documentation in `./_reference/thebe`
+- When interfacing with CodeMirror, reference the documentation in `./_reference/CodeMirror_ReferenceManual.html`
+- When it's possible to do so, always use `git mv` rather than `mv`.
+- The code you write should be DRY, efficient, reliable, and use the very latest best practices for JavaScript, Quarto (>=v1.8), Thebe (>=v0.9.2), Python (>=v3.13), CodeMirror, Binder, etc.

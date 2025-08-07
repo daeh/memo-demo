@@ -1,0 +1,316 @@
+---
+title: "Minimal with Thebe Integration"
+subtitle: "Next step: Adding Thebe to our working CodeMirror"
+page-layout: full
+sidebar: false
+toc: false
+include-after-body: includes/thebe.html
+---
+
+## Integration with Thebe
+
+This page attempts to use Thebe (like the main project files) but includes a fallback for when Thebe fails on localhost.
+
+```{=html}
+<!-- Additional CodeMirror resources as immediate fallback -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/comment/comment.min.js"></script>
+
+<style>
+.status-box {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f0f8ff;
+    border: 1px solid #4a90e2;
+    border-radius: 4px;
+}
+.success { color: green; font-weight: bold; }
+.error { color: red; font-weight: bold; }
+.warning { color: orange; font-weight: bold; }
+.CodeMirror {
+    border: 1px solid #ddd;
+    height: auto;
+    min-height: 150px;
+}
+</style>
+
+<div class="status-box">
+    <h3>Status</h3>
+    <div id="status-log">
+        <p>⏳ Initializing...</p>
+    </div>
+</div>
+
+<!-- This textarea has data-executable="true" so Thebe will try to process it -->
+<div style="margin: 20px 0;">
+    <p><strong>Test Editor:</strong> Click below and press <strong>Cmd-/</strong> or <strong>Ctrl-/</strong></p>
+    <textarea id="thebe-editor" data-executable="true"># Test comment toggle with Thebe
+print("Hello from Thebe!")
+x = 42
+y = 58
+result = x + y
+print(f"The answer is: {result}")
+
+# Try selecting multiple lines
+# and pressing cmd-/
+def test_function():
+    return "Testing cmd-/"</textarea>
+</div>
+
+<div class="status-box">
+    <h3>Console Tests</h3>
+    <pre>
+// Test if cmd-/ is configured:
+window.testThebeIntegration()
+
+// Check all CodeMirror instances:
+window.checkAllInstances()
+
+// Force fallback initialization:
+window.forceFallback()
+    </pre>
+</div>
+
+<script>
+let statusLog = [];
+let initMode = 'unknown';
+let cmInstance = null;
+
+function addStatus(message, type = 'info') {
+    const timestamp = new Date().toLocaleTimeString();
+    const entry = `[${timestamp}] ${message}`;
+    statusLog.push(entry);
+    
+    const statusDiv = document.getElementById('status-log');
+    const className = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : '';
+    
+    statusDiv.innerHTML = statusLog.map(log => {
+        const logClass = log.includes('✅') ? 'success' : log.includes('❌') ? 'error' : log.includes('⚠️') ? 'warning' : '';
+        return `<p class="${logClass}">${log}</p>`;
+    }).join('');
+}
+
+function testCodeMirrorInstance(cm, source) {
+    if (!cm) return false;
+    
+    try {
+        const extraKeys = cm.getOption('extraKeys') || {};
+        const hasCmd = extraKeys['Cmd-/'] === 'toggleComment';
+        const hasCtrl = extraKeys['Ctrl-/'] === 'toggleComment';
+        const hasAddon = typeof CodeMirror?.commands?.toggleComment === 'function';
+        
+        addStatus(`Testing ${source} instance:`, 'info');
+        addStatus(`  - Cmd-/: ${hasCmd ? '✅' : '❌'}`, hasCmd ? 'success' : 'error');
+        addStatus(`  - Ctrl-/: ${hasCtrl ? '✅' : '❌'}`, hasCtrl ? 'success' : 'error');
+        addStatus(`  - Comment addon: ${hasAddon ? '✅' : '❌'}`, hasAddon ? 'success' : 'error');
+        
+        return hasCmd && hasCtrl && hasAddon;
+    } catch (error) {
+        addStatus(`Error testing instance: ${error.message}`, 'error');
+        return false;
+    }
+}
+
+function initializeFallback() {
+    addStatus('Initializing fallback CodeMirror...', 'warning');
+    
+    try {
+        const textarea = document.getElementById('thebe-editor');
+        if (!textarea) {
+            throw new Error('Textarea not found');
+        }
+        
+        // Check if already initialized
+        const existing = document.querySelector('.CodeMirror');
+        if (existing && existing.CodeMirror) {
+            addStatus('CodeMirror already initialized', 'warning');
+            cmInstance = existing.CodeMirror;
+            initMode = 'existing';
+            return testCodeMirrorInstance(cmInstance, 'existing');
+        }
+        
+        // Initialize CodeMirror
+        cmInstance = CodeMirror.fromTextArea(textarea, {
+            mode: 'python',
+            theme: 'default',
+            lineNumbers: true,
+            indentUnit: 4,
+            extraKeys: {
+                'Cmd-/': 'toggleComment',
+                'Ctrl-/': 'toggleComment'
+            }
+        });
+        
+        initMode = 'fallback';
+        addStatus('✅ Fallback CodeMirror initialized', 'success');
+        
+        // Add key handler
+        cmInstance.on('keyHandled', (cm, name, event) => {
+            if (name === 'Cmd-/' || name === 'Ctrl-/') {
+                addStatus(`✅ Comment toggled via ${name}`, 'success');
+            }
+        });
+        
+        return testCodeMirrorInstance(cmInstance, 'fallback');
+    } catch (error) {
+        addStatus(`❌ Fallback initialization failed: ${error.message}`, 'error');
+        return false;
+    }
+}
+
+// Monitor for Thebe initialization
+let thebeCheckCount = 0;
+const maxThebeChecks = 20; // 10 seconds
+
+function checkForThebe() {
+    thebeCheckCount++;
+    addStatus(`Checking for Thebe... (${thebeCheckCount}/${maxThebeChecks})`, 'info');
+    
+    // Check if Thebe created a CodeMirror instance
+    const cmElements = document.querySelectorAll('.CodeMirror');
+    if (cmElements.length > 0) {
+        addStatus(`Found ${cmElements.length} CodeMirror instance(s)`, 'info');
+        
+        // Test the first instance
+        const cm = cmElements[0].CodeMirror;
+        if (cm) {
+            cmInstance = cm;
+            initMode = 'thebe';
+            addStatus('✅ Using Thebe-created CodeMirror instance', 'success');
+            
+            const working = testCodeMirrorInstance(cm, 'Thebe');
+            if (working) {
+                addStatus('✅ cmd-/ is working with Thebe!', 'success');
+            } else {
+                addStatus('⚠️ Thebe instance found but cmd-/ not configured', 'warning');
+                // Try to fix it
+                fixThebeInstance(cm);
+            }
+            return;
+        }
+    }
+    
+    // Check if Thebe is loaded but failed
+    if (window.thebe && window.thebeInstance) {
+        addStatus('⚠️ Thebe loaded but no CodeMirror instances created', 'warning');
+    }
+    
+    // Check if we should give up
+    if (thebeCheckCount >= maxThebeChecks) {
+        addStatus('⏱️ Thebe timeout - using fallback', 'warning');
+        initializeFallback();
+        return;
+    }
+    
+    // Keep checking
+    setTimeout(checkForThebe, 500);
+}
+
+function fixThebeInstance(cm) {
+    addStatus('Attempting to fix Thebe instance...', 'warning');
+    
+    try {
+        // Ensure comment addon is loaded
+        if (!CodeMirror.commands.toggleComment) {
+            addStatus('❌ Comment addon not available', 'error');
+            return false;
+        }
+        
+        // Get current extraKeys
+        const currentKeys = cm.getOption('extraKeys') || {};
+        
+        // Add our key bindings
+        cm.setOption('extraKeys', {
+            ...currentKeys,
+            'Cmd-/': 'toggleComment',
+            'Ctrl-/': 'toggleComment'
+        });
+        
+        addStatus('✅ Applied cmd-/ configuration to Thebe instance', 'success');
+        
+        // Test again
+        return testCodeMirrorInstance(cm, 'Fixed Thebe');
+    } catch (error) {
+        addStatus(`❌ Failed to fix Thebe instance: ${error.message}`, 'error');
+        return false;
+    }
+}
+
+// Global test functions
+window.testThebeIntegration = function() {
+    console.log('=== Thebe Integration Test ===');
+    console.log('Init mode:', initMode);
+    console.log('Has instance:', !!cmInstance);
+    
+    if (cmInstance) {
+        const extraKeys = cmInstance.getOption('extraKeys') || {};
+        console.log('ExtraKeys:', extraKeys);
+        console.log('cmd-/ working:', extraKeys['Cmd-/'] === 'toggleComment');
+    }
+    
+    console.log('Thebe loaded:', !!window.thebe);
+    console.log('Thebe instance:', !!window.thebeInstance);
+    console.log('Status log:', statusLog);
+    
+    return cmInstance && cmInstance.getOption('extraKeys')?.['Cmd-/'] === 'toggleComment';
+};
+
+window.checkAllInstances = function() {
+    const instances = document.querySelectorAll('.CodeMirror');
+    console.log(`Found ${instances.length} CodeMirror instances`);
+    
+    instances.forEach((el, i) => {
+        if (el.CodeMirror) {
+            console.log(`Instance ${i}:`, {
+                extraKeys: el.CodeMirror.getOption('extraKeys'),
+                mode: el.CodeMirror.getOption('mode'),
+                theme: el.CodeMirror.getOption('theme')
+            });
+        }
+    });
+};
+
+window.forceFallback = function() {
+    addStatus('Forcing fallback initialization...', 'warning');
+    return initializeFallback();
+};
+
+// Start monitoring when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    addStatus('Page loaded, starting Thebe check...', 'info');
+    
+    // Check if Thebe config exists
+    const thebeConfig = document.querySelector('script[type="text/x-thebe-config"]');
+    if (thebeConfig) {
+        addStatus('✅ Thebe configuration found', 'success');
+        try {
+            const config = JSON.parse(thebeConfig.textContent);
+            const hasExtraKeys = !!config.codeMirrorConfig?.extraKeys;
+            addStatus(`Thebe config has extraKeys: ${hasExtraKeys ? '✅' : '❌'}`, hasExtraKeys ? 'success' : 'error');
+        } catch (e) {
+            addStatus('Failed to parse Thebe config', 'error');
+        }
+    } else {
+        addStatus('❌ No Thebe configuration found', 'error');
+    }
+    
+    // Start checking for Thebe
+    setTimeout(checkForThebe, 1000);
+});
+</script>
+```
+
+## How This Works
+
+1. **Includes Thebe** via `include-after-body: includes/thebe.html`
+2. **Monitors for Thebe initialization** - waits up to 10 seconds
+3. **Tests if cmd-/ is configured** when CodeMirror instances are found
+4. **Falls back to direct initialization** if Thebe fails
+5. **Can fix Thebe instances** that are missing cmd-/ configuration
+
+## Expected Behavior
+
+- **On deployed sites**: Thebe initializes → cmd-/ works via Thebe config
+- **On localhost**: Thebe fails → Fallback initializes → cmd-/ still works

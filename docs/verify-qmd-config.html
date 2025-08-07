@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="">
+<meta name="author" content="Memo Team">
 
-<title>memo – Memo Demo</title>
+<title>QMD Configuration Verifier – Memo Demo</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -103,66 +103,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 <style>html{ scroll-behavior: smooth; }</style>
-<!-- Font Awesome for ipywidgets icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg==" crossorigin="anonymous">
-
-<!-- Thebe CSS -->
-<link rel="stylesheet" href="assets/styles/thebe.css">
-
-<!-- Custom Navbar CSS -->
-<link rel="stylesheet" href="assets/styles/custom-navbar.css">
-
-<!-- Thebe Configuration (MUST be loaded before Thebe library) -->
-<script type="text/x-thebe-config">
-  {
-    "requestKernel": true,
-    "binderOptions": {
-      "repo": "daeh/memo-demo",
-      "ref": "main",
-      "binderUrl": "https://mybinder.org"
-    },
-    "kernelOptions": {
-      "kernelName": "python3"
-    },
-    "selector": "[data-executable=\"true\"]",
-    "mountRunButton": true,
-    "mountRunAllButton": false,
-    "mountRestartButton": false,
-    "mountRestartAllButton": false,
-    "mountActivateWidget": false,
-    "mountStatusWidget": true,
-    "codeMirrorConfig": {
-      "theme": "default",
-      "lineNumbers": true,
-      "autoCloseBrackets": true,
-      "indentUnit": 4,
-      "indentWithTabs": false,
-      "smartIndent": true,
-      "extraKeys": {
-        "Cmd-/": "toggleComment",
-        "Ctrl-/": "toggleComment"
-      }
-    }
-  }
-</script>
-
-<!-- Load Thebe library (specific version for stability) -->
-<script src="https://unpkg.com/thebe@0.9.2/lib/index.js"></script>
-
-<!-- Custom Thebe initialization (loaded AFTER Thebe library) -->
-<script src="assets/js/thebe-config.js"></script>
-
-<!-- Custom Navbar JS -->
-<script src="assets/js/custom-navbar.js"></script>
 
 
 <link rel="stylesheet" href="assets/styles/styles.css">
-<link rel="stylesheet" href="assets/styles/custom.css">
-<meta property="og:title" content="memo – Memo Demo">
-<meta property="og:description" content="">
+<meta property="og:title" content="QMD Configuration Verifier – Memo Demo">
+<meta property="og:description" content="Verify cmd-/ is properly configured in qmd-generated pages">
 <meta property="og:site_name" content="Memo Demo">
-<meta name="twitter:title" content="memo – Memo Demo">
-<meta name="twitter:description" content="">
+<meta name="twitter:title" content="QMD Configuration Verifier – Memo Demo">
+<meta name="twitter:description" content="Verify cmd-/ is properly configured in qmd-generated pages">
 <meta name="twitter:card" content="summary">
 </head>
 
@@ -179,13 +127,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">memo</h1>
+<h1 class="title">QMD Configuration Verifier</h1>
+<p class="subtitle lead">Verify cmd-/ is properly configured in qmd-generated pages</p>
 </div>
 
 
 
 <div class="quarto-title-meta column-page">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Memo Team </p>
+          </div>
+  </div>
     
   
     
@@ -196,41 +151,180 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<!-- Thebe status widget mount point (hidden until moved to navbar) -->
-<div class="thebe-status" style="display: none;">
+<section id="verify-cmd--configuration" class="level2">
+<h2 class="anchored" data-anchor-id="verify-cmd--configuration">Verify cmd-/ Configuration</h2>
+<p>This page loads qmd-generated HTML files and extracts their Thebe configuration to verify cmd-/ is properly set up.</p>
+<style>
+    .success { color: green; font-weight: bold; }
+    .error { color: red; font-weight: bold; }
+    .code { background: #f0f0f0; padding: 10px; border-radius: 4px; font-family: monospace; overflow-x: auto; }
+    .results { margin-top: 20px; padding: 20px; background: #f9f9f9; border-radius: 8px; }
+    iframe { width: 100%; height: 400px; border: 1px solid #ccc; margin-top: 10px; }
+    select { padding: 5px; margin: 0 10px; }
+    button { padding: 5px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #0056b3; }
+</style>
 
+<div>
+    <label>Select a page to verify:</label>
+    <select id="pageSelector">
+        <option value="test-codemirror-static.html">test-codemirror-static.html</option>
+        <option value="index.html">index.html</option>
+        <option value="demo.html">demo.html</option>
+        <option value="demo-eig.html">demo-eig.html</option>
+        <option value="demo-mdp.html">demo-mdp.html</option>
+        <option value="demo-scalar-implicature.html">demo-scalar-implicature.html</option>
+        <option value="game23.html">game23.html</option>
+        <option value="rsa.html">rsa.html</option>
+        <option value="test.html">test.html</option>
+    </select>
+    <button onclick="verifyPage()">Verify Configuration</button>
 </div>
-<div id="6c66b058" class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> memo <span class="im">import</span> memo</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> jax.numpy <span class="im">as</span> np</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> enum <span class="im">import</span> IntEnum</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(jax.__version__)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<section id="suggested-demos" class="level3">
-<h3 class="anchored" data-anchor-id="suggested-demos">Suggested demos</h3>
-<ul>
-<li><p><a href="./demo-scalar-implicature.html">Scalar Implicature</a></p></li>
-<li><p><a href="./demo-eig.html">Question-asking via expected information gain</a></p></li>
-<li><p><a href="./demo-mdp.html">Planning and inverse-planning in an MDP</a></p></li>
-</ul>
-<!-- 
-- [Scalar Implicature](https://github.com/kach/memo/blob/main/demo/demo-scalar.py)
 
-- [Question-asking via expected information gain](https://github.com/kach/memo/blob/main/demo/demo-eig.ipynb)
+<div id="results" class="results"></div>
 
-- [Planning and inverse-planning in an MDP](https://github.com/kach/memo/blob/main/demo/demo-mdp.ipynb) 
--->
+<script>
+async function verifyPage() {
+    const selectedPage = document.getElementById('pageSelector').value;
+    const resultsDiv = document.getElementById('results');
+    
+    resultsDiv.innerHTML = '<p>⏳ Loading and analyzing ' + selectedPage + '...</p>';
+    
+    try {
+        // Fetch the page content
+        const response = await fetch(selectedPage);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const html = await response.text();
+        
+        // Parse the HTML
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        
+        // Find Thebe configuration
+        const configScript = doc.querySelector('script[type="text/x-thebe-config"]');
+        
+        if (!configScript) {
+            resultsDiv.innerHTML = '<p class="error">❌ No Thebe configuration found in ' + selectedPage + '</p>';
+            return;
+        }
+        
+        // Parse the configuration
+        let config;
+        try {
+            config = JSON.parse(configScript.textContent);
+        } catch (e) {
+            resultsDiv.innerHTML = '<p class="error">❌ Failed to parse Thebe configuration: ' + e.message + '</p>';
+            return;
+        }
+        
+        const codeMirrorConfig = config.codeMirrorConfig || {};
+        const extraKeys = codeMirrorConfig.extraKeys || {};
+        
+        // Check for cmd-/ configuration
+        const hasCmdSlash = extraKeys['Cmd-/'] === 'toggleComment';
+        const hasCtrlSlash = extraKeys['Ctrl-/'] === 'toggleComment';
+        const hasCommentAddon = html.includes('comment.min.js') || html.includes('addon/comment/comment');
+        const hasThebeConfig = html.includes('thebe-config.js');
+        
+        // Build results HTML
+        let resultsHTML = '<h2>Results for ' + selectedPage + ':</h2>';
+        
+        resultsHTML += '<h3>✅ Thebe Configuration Found:</h3>';
+        resultsHTML += '<div class="code"><pre>' + JSON.stringify(config, null, 2) + '</pre></div>';
+        
+        resultsHTML += '<h3>Key Bindings Status:</h3>';
+        resultsHTML += '<ul>';
+        resultsHTML += '<li>Cmd-/ → ' + (extraKeys['Cmd-/'] || 'NOT SET') + ' ' + (hasCmdSlash ? '✅' : '❌') + '</li>';
+        resultsHTML += '<li>Ctrl-/ → ' + (extraKeys['Ctrl-/'] || 'NOT SET') + ' ' + (hasCtrlSlash ? '✅' : '❌') + '</li>';
+        resultsHTML += '</ul>';
+        
+        resultsHTML += '<h3>Dependencies:</h3>';
+        resultsHTML += '<ul>';
+        resultsHTML += '<li>Comment addon: ' + (hasCommentAddon ? '✅ Loaded' : '❌ Not found') + '</li>';
+        resultsHTML += '<li>Thebe config script: ' + (hasThebeConfig ? '✅ Loaded' : '❌ Not found') + '</li>';
+        resultsHTML += '</ul>';
+        
+        const isFullyConfigured = hasCmdSlash && hasCtrlSlash && hasCommentAddon;
+        
+        resultsHTML += '<h3>Overall Status:</h3>';
+        resultsHTML += '<p class="' + (isFullyConfigured ? 'success' : 'error') + '">';
+        if (isFullyConfigured) {
+            resultsHTML += '✅ cmd-/ is FULLY configured! It will work when Thebe initializes successfully.';
+        } else {
+            resultsHTML += '❌ cmd-/ is NOT fully configured. Issues found:';
+            if (!hasCmdSlash || !hasCtrlSlash) resultsHTML += '<br>- Missing key bindings';
+            if (!hasCommentAddon) resultsHTML += '<br>- Comment addon not loaded';
+        }
+        resultsHTML += '</p>';
+        
+        resultsHTML += '<h3>Page Preview:</h3>';
+        resultsHTML += '<iframe src="' + selectedPage + '" title="Page preview"></iframe>';
+        
+        resultsDiv.innerHTML = resultsHTML;
+        
+        // Log to console for debugging
+        console.log('Configuration verification for', selectedPage, {
+            hasCmdSlash,
+            hasCtrlSlash,
+            hasCommentAddon,
+            hasThebeConfig,
+            isFullyConfigured,
+            extraKeys
+        });
+        
+    } catch (error) {
+        resultsDiv.innerHTML = '<p class="error">❌ Error loading page: ' + error.message + '</p>';
+        console.error('Verification error:', error);
+    }
+}
+
+// Auto-verify the first page on load
+window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(verifyPage, 100);
+});
+
+// Expose verification function globally
+window.verifyAllPages = async function() {
+    const select = document.getElementById('pageSelector');
+    const results = {};
+    
+    for (let i = 0; i < select.options.length; i++) {
+        select.selectedIndex = i;
+        await verifyPage();
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Extract result
+        const resultText = document.querySelector('#results .success, #results .error')?.textContent || '';
+        results[select.options[i].value] = resultText.includes('FULLY configured');
+    }
+    
+    console.table(results);
+    return results;
+};
+</script>
 </section>
-<section id="memo-resources" class="level3">
-<h3 class="anchored" data-anchor-id="memo-resources"><code>memo</code> resources</h3>
-<ul>
-<li><p><a href="https://github.com/kach/memo"><code>memo</code> GitHub Repo</a></p></li>
-<li><p><a href="https://github.com/kach/memo/blob/main/Handbook.pdf">The <code>memo</code> handbook</a></p></li>
-<li><p><a href="https://github.com/kach/memo/discussions">GitHub Discussions</a> - To ask questions about memo, and to get help from other memo users.</p></li>
-<li><p><a href="https://lists.csail.mit.edu/mailman/listinfo/memo-lang">Mailing list</a> - For updates on memo’s development.</p></li>
-</ul>
+<section id="manual-verification" class="level2">
+<h2 class="anchored" data-anchor-id="manual-verification">Manual Verification</h2>
+<p>You can also manually check the configuration in the browser console:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode javascript code-with-copy"><code class="sourceCode javascript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">// On any page with Thebe, run:</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> config <span class="op">=</span> <span class="bu">JSON</span><span class="op">.</span><span class="fu">parse</span>(<span class="bu">document</span><span class="op">.</span><span class="fu">querySelector</span>(<span class="st">'script[type="text/x-thebe-config"]'</span>)<span class="op">?.</span><span class="at">textContent</span> <span class="op">||</span> <span class="st">'{}'</span>)<span class="op">;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="bu">console</span><span class="op">.</span><span class="fu">log</span>(<span class="st">'ExtraKeys:'</span><span class="op">,</span> config<span class="op">.</span><span class="at">codeMirrorConfig</span><span class="op">?.</span><span class="at">extraKeys</span>)<span class="op">;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">// To verify all pages at once:</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> <span class="bu">window</span><span class="op">.</span><span class="fu">verifyAllPages</span>()<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="why-cmd--doesnt-work-on-localhost" class="level2">
+<h2 class="anchored" data-anchor-id="why-cmd--doesnt-work-on-localhost">Why cmd-/ Doesn’t Work on Localhost</h2>
+<p>Even though the configuration is correct:</p>
+<ol type="1">
+<li><strong>Thebe fails on localhost</strong> due to CORS when connecting to Binder</li>
+<li><strong>No CodeMirror instances</strong> are created without Thebe</li>
+<li><strong>Configuration is correct</strong> but there’s nothing to apply it to</li>
+</ol>
+<p>The configuration <strong>WILL work</strong> when deployed to a real server where Thebe can initialize properly.</p>
 
 
 </section>

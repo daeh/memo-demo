@@ -1,0 +1,18 @@
+---
+title: "Ultra Minimal"
+---
+
+```{=html}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/comment/comment.min.js"></script>
+
+<textarea id="cm">print("Press cmd-/")</textarea>
+
+<script>
+CodeMirror.fromTextArea(document.getElementById('cm'), {
+    extraKeys: {'Cmd-/': 'toggleComment', 'Ctrl-/': 'toggleComment'}
+});
+</script>
+```
